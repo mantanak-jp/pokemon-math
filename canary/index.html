@@ -5,69 +5,71 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ポケモンさんすうアプリ V2準備版</title>
     <style>
-        /* スタイルは既存を維持 */
         :root { --primary-color: #ffcb05; --secondary-color: #3b4cca; --bg-color: #eef2f7; --card-bg: #ffffff; }
         body { font-family: sans-serif; background-color: var(--bg-color); padding: 10px; display: flex; flex-direction: column; align-items: center; }
         .app-container { width: 100%; max-width: 450px; background: var(--card-bg); padding: 20px; border-radius: 20px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); }
         .admin-panel { margin: 20px 0; padding: 15px; background: #fff1f2; border: 2px dashed #f43f5e; border-radius: 10px; }
-        .log-box { background: #000; color: #0f0; font-family: monospace; padding: 10px; height: 150px; overflow-y: auto; font-size: 12px; margin-top: 10px; }
-        button { width: 100%; padding: 10px; margin-bottom: 5px; cursor: pointer; border-radius: 5px; border: none; background: #e11d48; color: white; }
+        .log-box { background: #000; color: #0f0; font-family: monospace; padding: 10px; height: 250px; overflow-y: auto; font-size: 12px; margin-top: 10px; border: 2px solid #38bdf8; }
+        button { width: 100%; padding: 12px; margin-bottom: 8px; cursor: pointer; border-radius: 5px; border: none; background: #e11d48; color: white; font-weight: bold; }
     </style>
 </head>
 <body>
     <div class="app-container">
         <h1>V2 開発用ダッシュボード</h1>
-
-        <div class="admin-panel" id="admin-panel">
+        <div class="admin-panel">
             <h3 style="margin-top:0;">🛠️ V2 移行管理</h3>
             <button onclick="rebuildMasterData()">1. 全世代マスター構築</button>
             <button onclick="migrateUserData()">2. ユーザーデータ移行</button>
             <button onclick="checkIntegrity()">3. 整合性チェック</button>
         </div>
-
-        <div id="debug-log" class="log-box"></div>
+        <div id="debug-log" class="log-box">ログ: 待機中...</div>
     </div>
 
     <script>
-        // ログ出力関数
         function logToScreen(msg) {
             const log = document.getElementById('debug-log');
             log.innerHTML += `> ${msg}<br>`;
             log.scrollTop = log.scrollHeight;
         }
 
-        // 1. マスターデータ構築 (API制限対策つき)
+        // 世代ごとの定義 (PokeAPIのID範囲)
+        const GEN_CONFIG = [
+            { id: 1, name: "初代", start: 1, end: 151 },
+            { id: 2, name: "第2世代", start: 152, end: 251 },
+            { id: 3, name: "第3世代", start: 252, end: 386 },
+            { id: 4, name: "第4世代", start: 387, end: 493 },
+            { id: 5, name: "第5世代", start: 494, end: 649 },
+            { id: 6, name: "第6世代", start: 650, end: 721 },
+            { id: 7, name: "第7世代", start: 722, end: 809 },
+            { id: 8, name: "第8世代", start: 810, end: 905 },
+            { id: 9, name: "第9世代", start: 906, end: 1025 }
+        ];
+
         async function rebuildMasterData() {
-            logToScreen("構築開始: API 1秒ウェイトあり");
-            for (let gen = 1; gen <= 9; gen++) {
-                try {
-                    logToScreen(`Gen ${gen} 取得中...`);
-                    // API取得処理の擬似コード (実際はここでfetch)
-                    await new Promise(r => setTimeout(r, 1000)); 
+            logToScreen("【開始】マスター構築");
+            for (const gen of GEN_CONFIG) {
+                logToScreen(`構築: ${gen.name} (${gen.start}-${gen.end})`);
+                
+                let internalId = 1;
+                for (let nid = gen.start; nid <= gen.end; nid++) {
+                    // API制限回避のため、必要に応じてここでウェイト調整可能
+                    // 今回は1世代ごとではなく、各ポケモン取得時にウェイトを分散
+                    try {
+                        // 実際にはここで fetch(`https://pokeapi.co/api/v2/pokemon/${nid}`) 等を実行
+                        // 一旦動作確認のため0.1秒ウェイト
+                        await new Promise(r => setTimeout(r, 100)); 
+                    } catch(e) { logToScreen(`Err: No.${nid}`); }
                     
-                    // Firestoreへの保存 (上書き)
-                    // await db.collection('masters').doc(`gen_${gen}`).set({...});
-                    logToScreen(`Gen ${gen} 保存完了`);
-                } catch (e) {
-                    logToScreen(`エラー: ${e.message}`);
+                    internalId++;
                 }
+                logToScreen(`【完了】${gen.name} 保存済み`);
+                await new Promise(r => setTimeout(r, 1000)); // 世代間で1秒休止
             }
-            logToScreen("全てのマスター構築完了");
+            logToScreen("【全終了】全ての世代構築完了");
         }
 
-        // 2. ユーザーデータ移行
-        async function migrateUserData() {
-            logToScreen("ユーザー移行開始...");
-            // db.collection('users').get() で旧データを読み込み
-            // 新規コレクション users_v2 へコンバートして set()
-            logToScreen("移行完了 (V1はReadのみ実施)");
-        }
-
-        // 3. 整合性チェック
-        async function checkIntegrity() {
-            logToScreen("整合性チェック実行中...");
-            // V1とV2の差分比較ロジック
-        }
+        function migrateUserData() { logToScreen("移行機能は未実装です"); }
+        function checkIntegrity() { logToScreen("チェック機能は未実装です"); }
     </script>
 </body>
 </html>
