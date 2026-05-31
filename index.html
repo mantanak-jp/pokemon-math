@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ポケモンさんすうアプリ</title>
+    <style>
+        :root {
+            --primary-color: #ffcb05;
+            --secondary-color: #3b4cca;
+            --bg-color: #eef2f7;
+            --card-bg: #ffffff;
+            --text-color: #1e293b;
+        }
+        body {
+            font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .app-container {
+            width: 100%;
+            max-width: 450px;
+            background: var(--card-bg);
+            border-radius: 20px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+            padding: 20px;
+            box-sizing: border-box;
+            text-align: center;
+            min-height: 85vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+        }
+        .screen { display: none; }
+        .screen.active { display: flex; flex-direction: column; gap: 15px; }
+        
+        h1 { color: var(--secondary-color); font-size: 24px; margin: 10px 0; }
+        h2 { font-size: 20px; margin: 5px 0; }
+        
+        button {
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+        button:disabled { background-color: #cbd5e1; cursor: not-allowed; }
+        button:active:not(:disabled) { transform: scale(0.95); }
+        button.yellow { background-color: var(--primary-color); color: var(--secondary-color); }
+        
+        .grid-2x2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .progress-bar { background: #e2e8f0; border-radius: 10px; height: 10px; width: 100%; overflow: hidden; }
+        .progress-fill { background: #22c55e; height: 100%; width: 0%; transition: width 0.3s; }
+        .question-text { font-size: 42px; font-weight: bold; margin: 20px 0; }
+        
+        .zukan-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-height: 350px; overflow-y: auto; padding: 10px; background: #f8fafc; border-radius: 10px; }
+        .zukan-item { border: 2px solid #e2e8f0; border-radius: 10px; padding: 5px; background: white; font-size: 11px; cursor: pointer; transition: transform 0.1s; }
+        .zukan-item:active { transform: scale(0.95); }
+        .zukan-item img { width: 55px; height: 55px; object-fit: contain; }
+        
+        .alert-msg { font-size: 24px; font-weight: bold; margin: 15px 0; min-height: 36px; }
+        .success { color: #22c55e; }
+        .wrong { color: #ef4444; }
+
+        /* モーダル（ポップアップ）用スタイル */
+        .modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.6); z-index: 1000;
+            display: none; justify-content: center; align-items: center;
+        }
+        .modal.active { display: flex; }
+        .modal-content {
+            background: white; border-radius: 20px; width: 85%; max-width: 320px;
+            padding: 20px; text-align: center; position: relative;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+        .modal-close {
+            position: absolute; top: 10px; right: 15px; font-size: 28px;
+            color: #94a3b8; cursor: pointer; font-weight: bold; line-height: 1;
+        }
+        .modal-img { width: 120px; height: 120px; object-fit: contain; margin: 0 auto; }
+        .modal-title { font-size: 22px; font-weight: bold; color: var(--text-color); margin: 5px 0; }
+        .modal-types { display: flex; justify-content: center; gap: 5px; margin-bottom: 10px; }
+        .type-badge { background: #e2e8f0; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: bold; color: #475569; }
+        .modal-stats { display: flex; justify-content: space-around; background: #f8fafc; padding: 10px; border-radius: 10px; font-size: 14px; font-weight: bold; margin-bottom: 15px; }
+        .modal-flavor { font-size: 14px; color: #475569; text-align: left; line-height: 1.6; background: #f1f5f9; padding: 15px; border-radius: 10px; }
+
+        #debug-log { 
+            width: 100%; 
+            margin-top: 15px; 
+            padding: 10px; 
+            background: #1e293b; 
+            color: #38bdf8; 
+            font-family: monospace; 
+            font-size: 11px; 
+            border-radius: 10px; 
+            box-sizing: border-box; 
+            text-align: left; 
+            min-height: 50px; 
+            max-height: 90px; 
+            overflow-y: auto;
+            border: 2px solid #38bdf8;
+        }
+    </style>
+
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+
+<div class="app-container">
+    <div id="screen-title" class="screen active">
+        <h1>ポケモンさんすう</h1>
+        <div style="margin: 40px 0;"><span style="font-size: 64px;">✏️</span><span style="font-size: 64px;">🎒</span></div>
+        <button id="btn-start-game" onclick="changeScreen('screen-user')" disabled>じゅんびちゅう...</button>
+    </div>
+
+    <div id="screen-user" class="screen">
+        <h2>だれが あそぶ？</h2>
+        <button onclick="selectUser('りょうま')">👦 りょうま</button>
+        <button onclick="selectUser('さら')">👧 さら</button>
+        <button class="yellow" onclick="selectUser('ゲスト')">👤 ゲスト</button>
+        <button style="background:#64748b; font-size:14px; padding:10px;" onclick="changeScreen('screen-title')">もどる</button>
+    </div>
+
+    <div id="screen-menu" class="screen">
+        <h2 id="menu-welcome">レベルを えらぼう！</h2>
+        <button onclick="startQuiz(1)">レベル 1 (1けたの たし・ひき)</button>
+        <button onclick="startQuiz(2)">レベル 2 (2けた と 1けた)</button>
+        <button onclick="startQuiz(3)">レベル 3 (2けた の たし・ひき)</button>
+        <button onclick="startQuiz(4)">レベル 4 (かけざん 九九)</button>
+        <hr style="width:100%; border:1px solid #e2e8f0;">
+        <button class="yellow" onclick="showZukan()">📕 ポケモンずかんを みる</button>
+        <button style="background:#64748b;" onclick="changeScreen('screen-user')">👤 プレイヤーを かえる</button>
+    </div>
+
+    <div id="screen-quiz" class="screen">
+        <div style="display:flex; justify-content:space-between; font-weight:bold;">
+            <div id="quiz-count">だい 1 もん</div>
+            <div id="quiz-score">せいかい: 0</div>
+        </div>
+        <div class="progress-bar"><div id="progress" class="progress-fill"></div></div>
+        <div class="question-text" id="question">? + ? = ?</div>
+        <div id="quiz-alert" class="alert-msg"></div>
+        <div class="grid-2x2">
+            <button onclick="answer(this)" id="choice0">?</button>
+            <button onclick="answer(this)" id="choice1">?</button>
+            <button onclick="answer(this)" id="choice2">?</button>
+            <button onclick="answer(this)" id="choice3">?</button>
+        </div>
+    </div>
+
+    <div id="screen-result" class="screen">
+        <h2>あそびおわったよ！</h2>
+        <div id="result-text" style="font-size: 26px; font-weight: bold; margin: 15px 0;"></div>
+        <div id="get-animation" style="font-size: 50px; margin: 10px 0;">🔴</div>
+        <div id="get-message" style="font-size: 18px; font-weight: bold; margin: 10px 0; white-space: pre-line;"></div>
+        <div id="complete-action" style="display:none;">
+            <button class="yellow" onclick="goToNextGen()">✨ つぎの せだいへ！</button>
+        </div>
+        <div id="normal-action">
+            <button onclick="changeScreen('screen-menu')">メニューにもどる</button>
+        </div>
+    </div>
+
+    <div id="screen-zukan" class="screen">
+        <h2>ポケモンずかん (初代151匹)</h2>
+        <div id="zukan-ratio" style="font-weight: bold; margin-bottom: 5px;">0 / 151 匹ゲット！</div>
+        <div class="zukan-grid" id="zukan-container"></div>
+        <button onclick="changeScreen('screen-menu')">メニューにもどる</button>
+    </div>
+
+    <div id="debug-log">ロギングシステム起動中...</div>
+</div>
+
+<div id="poke-modal" class="modal" onclick="closeModal()">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <div class="modal-close" onclick="closeModal()">×</div>
+        <div style="color:#64748b; font-size:14px; font-weight:bold;" id="modal-no"></div>
+        <img id="modal-img" class="modal-img" src="" alt="">
+        <div id="modal-title" class="modal-title"></div>
+        <div id="modal-types" class="modal-types"></div>
+        <div class="modal-stats">
+            <div>たかさ: <span id="modal-height"></span>m</div>
+            <div>おもさ: <span id="modal-weight"></span>kg</div>
+        </div>
+        <div id="modal-flavor" class="modal-flavor"></div>
+    </div>
+</div>
+
+<script>
+    function logToScreen(msg) {
+        console.log(msg);
+        const el = document.getElementById('debug-log');
+        if (el) {
+            el.innerHTML += `<div>▶ ${msg}</div>`;
+            el.scrollTop = el.scrollHeight;
+        }
+    }
+
+    logToScreen("HTML構築完了。プログラムを起動します。");
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyDeFo0Xwsr4QgwCHVKrc5kIT03Rvfe7xQw",
+        authDomain: "pokemon-math-app.firebaseapp.com",
+        projectId: "pokemon-math-app",
+        storageBucket: "pokemon-math-app.firebasestorage.app",
+        messagingSenderId: "1002462273438",
+        appId: "1:1002462273438:web:646cd240932dfaf6cd808f"
+    };
+
+    let db;
+    let firebaseReady = false;
+    let pokeDataReady = false;
+    let POKEMON_151 = []; 
+    let currentUser = "";
+    let userStates = { "りょうま": [], "さら": [], "ゲスト": [] };
+
+    let currentLevel = 1;
+    let currentQuestionIdx = 0;
+    let correctCount = 0;
+    let currentCorrectAnswer = 0;
+    let isAnswered = false;
+
+    const TYPE_MAP = {
+        normal: "ノーマル", fire: "ほのお", water: "みず", electric: "でんき", grass: "くさ",
+        ice: "こおり", fighting: "かくとう", poison: "どく", ground: "じめん", flying: "ひこう",
+        psychic: "エスパー", bug: "むし", rock: "いわ", ghost: "ゴースト", dragon: "ドラゴン",
+        dark: "あく", steel: "はがね", fairy: "フェアリー"
+    };
+
+    try {
+        if (typeof firebase !== 'undefined') {
+            firebase.initializeApp(firebaseConfig);
+            db = firebase.firestore();
+            firebaseReady = true;
+            logToScreen("【接続完了】Firebase DBの準備が整いました。");
+        }
+    } catch (e) { logToScreen("【Firebaseエラー】: " + e.message); }
+
+    async function initPokeAPI() {
+        logToScreen("PokeAPIから151匹のデータを読み込み中...");
+        try {
+            const promises = Array.from({length: 151}, (_, i) => fetchSinglePoke(i + 1));
+            POKEMON_151 = await Promise.all(promises);
+            pokeDataReady = true;
+            logToScreen(`【読込完了】全151匹のデータをキャッシュしました。`);
+            if (firebaseReady && pokeDataReady) {
+                const startBtn = document.getElementById('btn-start-game');
+                startBtn.innerText = "はじめる";
+                startBtn.disabled = false;
+            }
+        } catch (error) { logToScreen("【API通信エラー】: " + error.message); }
+    }
+
+    async function fetchSinglePoke(id) {
+        try {
+            const resDetail = await fetch(`https://pokeapi.co/api/v2/pokemon/${id}`);
+            const detail = await resDetail.json();
+            const resSpecies = await fetch(`https://pokeapi.co/api/v2/pokemon-species/${id}`);
+            const species = await resSpecies.json();
+            
+            const name = species.names.find(n => n.language.name === "ja" || n.language.name === "ja-Hrkt")?.name || detail.name;
+            
+            const height = detail.height / 10;
+            const weight = detail.weight / 10;
+            const types = detail.types.map(t => TYPE_MAP[t.type.name] || t.type.name);
+            
+            let flavor = "せつめいが ありません。";
+            
+            // 【修正部分】ひらがな・カタカナ版を優先しつつ、通常の「ja」も検索対象に追加
+            if (species.flavor_text_entries && species.flavor_text_entries.length > 0) {
+                const jaEntry = species.flavor_text_entries.find(e => e.language.name === "ja-Hrkt")
+                             || species.flavor_text_entries.find(e => e.language.name === "ja-hrkt")
+                             || species.flavor_text_entries.find(e => e.language.name === "ja");
+                
+                if (jaEntry) {
+                    flavor = jaEntry.flavor_text.replace(/\r?\n|\f/g, " ");
+                }
+            }
+
+            return { 
+                id: id, 
+                name: name, 
+                image: detail.sprites.other['official-artwork'].front_default || detail.sprites.front_default,
+                height: height,
+                weight: weight,
+                types: types,
+                flavor: flavor
+            };
+        } catch (e) { 
+            return { id: id, name: `No.${id}`, image: "", height: 0, weight: 0, types: [], flavor: "エラーのため、せつめいが取得できませんでした。" }; 
+        }
+    }
+
+    window.dbLoadData = async function(username) {
+        try {
+            const docSnap = await db.collection("users").doc(username).get();
+            return docSnap.exists ? docSnap.data().owned || [] : [];
+        } catch (e) { return []; }
+    };
+
+    window.dbSaveData = async function(username, ownedList) {
+        try { await db.collection("users").doc(username).set({ owned: ownedList, updatedAt: new Date() }); } catch (e) {}
+    };
+
+    function changeScreen(s) { document.querySelectorAll('.screen').forEach(d => d.classList.remove('active')); document.getElementById(s).classList.add('active'); }
+    async function selectUser(u) { currentUser = u; userStates[u] = await window.dbLoadData(u); document.getElementById('menu-welcome').innerText = `✨ ${currentUser} の メニュー ✨`; changeScreen('screen-menu'); }
+    function startQuiz(l) { currentLevel = l; currentQuestionIdx = 0; correctCount = 0; document.getElementById('quiz-score').innerText = `せいかい: 0`; makeQuestion(); changeScreen('screen-quiz'); }
+    
+    function makeQuestion() {
+        isAnswered = false;
+        document.getElementById('quiz-alert').innerText = "";
+        currentQuestionIdx++;
+        document.getElementById('quiz-count').innerText = `だい ${currentQuestionIdx} もん`;
+        document.getElementById('progress').style.width = `${(currentQuestionIdx - 1) * 20}%`;
+        let n1, n2, op="+";
+        if(currentLevel === 1) { n1=Math.floor(Math.random()*9)+1; n2=Math.floor(Math.random()*9)+1; if(Math.random()>0.5 && n1>=n2) op="-"; currentCorrectAnswer = op==="+"?n1+n2:n1-n2; }
+        else if(currentLevel === 2) { n1=Math.floor(Math.random()*20)+10; n2=Math.floor(Math.random()*9)+1; if(Math.random()>0.5) op="-"; currentCorrectAnswer = op==="+"?n1+n2:n1-n2; }
+        else if(currentLevel === 3) { n1=Math.floor(Math.random()*50)+20; n2=Math.floor(Math.random()*40)+10; if(Math.random()>0.5 && n1>=n2) op="-"; currentCorrectAnswer = op==="+"?n1+n2:n1-n2; }
+        else { n1=Math.floor(Math.random()*9)+1; n2=Math.floor(Math.random()*9)+1; op="×"; currentCorrectAnswer = n1*n2; }
+        document.getElementById('question').innerText = `${n1} ${op} ${n2} = ?`;
+        let choices = [currentCorrectAnswer];
+        while(choices.length < 4) { let d = currentCorrectAnswer+(Math.floor(Math.random()*9)-4); if(d >= 0 && !choices.includes(d)) choices.push(d); }
+        choices.sort(()=>Math.random()-0.5).forEach((v,i) => { let b=document.getElementById(`choice${i}`); b.innerText=v; b.style.background="#3b4cca"; });
+    }
+
+    function answer(btn) {
+        if(isAnswered) return; isAnswered = true;
+        if(parseInt(btn.innerText) === currentCorrectAnswer) { correctCount++; btn.style.background="#22c55e"; document.getElementById('quiz-alert').innerHTML="<span class='success'>⭕ せいかい！</span>"; document.getElementById('quiz-score').innerText=`せいかい: ${correctCount}`; }
+        else { btn.style.background="#ef4444"; document.getElementById('quiz-alert').innerHTML="<span class='wrong'>❌ ざんねん！</span>"; }
+        setTimeout(() => { if(currentQuestionIdx < 5) makeQuestion(); else endQuiz(); }, 1200);
+    }
+
+    async function endQuiz() {
+        document.getElementById('result-text').innerText = `5もん中 ${correctCount}もん せいかい！`;
+        let msgEl = document.getElementById('get-message');
+        let ballEl = document.getElementById('get-animation');
+        let completeAction = document.getElementById('complete-action');
+        let normalAction = document.getElementById('normal-action');
+        
+        completeAction.style.display = "none";
+        normalAction.style.display = "block";
+        
+        if (correctCount >= 4) {
+            let limit = (currentLevel === 4) ? 151 : (currentLevel === 3 ? 143 : 100);
+            let pool = POKEMON_151.slice(0, limit);
+            let unowned = pool.filter(p => !userStates[currentUser].includes(p.id));
+            if (unowned.length === 0) {
+                pool = POKEMON_151;
+                unowned = pool.filter(p => !userStates[currentUser].includes(p.id));
+            }
+
+            let numToGet = (correctCount === 5) ? 2 : 1;
+            let caughtText = [];
+            let isCompleteTriggered = false;
+
+            for(let i=0; i<numToGet; i++) {
+                if (unowned.length > 0) {
+                    if ((numToGet === 2 && unowned.length <= 2) || (numToGet === 1 && unowned.length === 1)) {
+                        isCompleteTriggered = true;
+                    }
+
+                    let rIdx = Math.floor(Math.random() * unowned.length);
+                    let poke = unowned.splice(rIdx, 1)[0];
+                    userStates[currentUser].push(poke.id);
+                    caughtText.push(`【No.${poke.id} ${poke.name}】`);
+                    
+                    if (isCompleteTriggered) break;
+                }
+            }
+
+            if (caughtText.length > 0) {
+                ballEl.innerText = (numToGet === 2) ? "✨⭐🔴⭐✨" : "🔴";
+                msgEl.innerText = `やったぜ！\n${caughtText.join('\nと\n')}\nを ゲットしたよ！`;
+            }
+
+            if (isCompleteTriggered) {
+                ballEl.innerText = "🏆";
+                msgEl.innerText += "\n\nすごい！ コンプリート！\nつぎの せだいへ すすもう！";
+                completeAction.style.display = "block";
+                normalAction.style.display = "none";
+            } else if (unowned.length === 0 && caughtText.length === 0) {
+                ballEl.innerText = "🏆";
+                msgEl.innerText = "すごい！ コンプリート！\nつぎの バージョンで あたらしい ポケモンが\nふえるから まっててね！";
+            }
+
+            if (firebaseReady) await window.dbSaveData(currentUser, userStates[currentUser]);
+        } else {
+            ballEl.innerText = "💨";
+            msgEl.innerText = "おしい！\nもういちど ちょうせん しよう！";
+        }
+        changeScreen('screen-result');
+    }
+
+    function goToNextGen() {
+        logToScreen("次の世代へ進みます（実装予定）");
+        changeScreen('screen-menu');
+    }
+
+    function showZukan() {
+        let container = document.getElementById('zukan-container');
+        container.innerHTML = "";
+        let ownedIds = userStates[currentUser];
+        
+        let uniqueCount = new Set(ownedIds).size;
+        document.getElementById('zukan-ratio').innerText = `${uniqueCount} / 151 匹ゲット！`;
+        
+        POKEMON_151.forEach(poke => {
+            let item = document.createElement('div');
+            item.className = "zukan-item";
+            if (ownedIds.includes(poke.id)) {
+                // クリックイベントを追加
+                item.onclick = () => openModal(poke.id);
+                item.innerHTML = `<div style="color:#64748b; font-size:9px;">No.${poke.id}</div><img src="${poke.image}" alt="${poke.name}"><div style="font-weight:bold; white-space:nowrap; overflow:hidden;">${poke.name}</div>`;
+            } else {
+                item.innerHTML = `<div style="color:#cbd5e1; font-size:9px;">No.${poke.id}</div><div style="font-size:28px; color:#cbd5e1; height:55px; line-height:55px;">?</div><div style="color:#94a3b8;">???</div>`;
+            }
+            container.appendChild(item);
+        });
+        changeScreen('screen-zukan');
+    }
+
+    function openModal(id) {
+        const poke = POKEMON_151.find(p => p.id === id);
+        if (!poke) return;
+        
+        document.getElementById('modal-no').innerText = `No.${poke.id}`;
+        document.getElementById('modal-img').src = poke.image;
+        document.getElementById('modal-title').innerText = poke.name;
+        document.getElementById('modal-height').innerText = poke.height;
+        document.getElementById('modal-weight').innerText = poke.weight;
+        document.getElementById('modal-flavor').innerText = poke.flavor;
+        
+        const typesContainer = document.getElementById('modal-types');
+        typesContainer.innerHTML = poke.types.map(t => `<div class="type-badge">${t}</div>`).join('');
+        
+        document.getElementById('poke-modal').classList.add('active');
+    }
+
+    function closeModal() {
+        document.getElementById('poke-modal').classList.remove('active');
+    }
+
+    window.onload = initPokeAPI;
+</script>
+</body>
+</html>
