@@ -72,7 +72,6 @@
         .success { color: #22c55e; }
         .wrong { color: #ef4444; }
 
-        /* モーダル（ポップアップ）用スタイル */
         .modal {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0, 0, 0, 0.6); z-index: 1000;
@@ -278,7 +277,6 @@
             
             let flavor = "せつめいが ありません。";
             
-            // 【修正部分】ひらがな・カタカナ版を優先しつつ、通常の「ja」も検索対象に追加
             if (species.flavor_text_entries && species.flavor_text_entries.length > 0) {
                 const jaEntry = species.flavor_text_entries.find(e => e.language.name === "ja-Hrkt")
                              || species.flavor_text_entries.find(e => e.language.name === "ja-hrkt")
@@ -367,16 +365,17 @@
 
             for(let i=0; i<numToGet; i++) {
                 if (unowned.length > 0) {
-                    if ((numToGet === 2 && unowned.length <= 2) || (numToGet === 1 && unowned.length === 1)) {
-                        isCompleteTriggered = true;
-                    }
-
                     let rIdx = Math.floor(Math.random() * unowned.length);
                     let poke = unowned.splice(rIdx, 1)[0];
                     userStates[currentUser].push(poke.id);
                     caughtText.push(`【No.${poke.id} ${poke.name}】`);
                     
-                    if (isCompleteTriggered) break;
+                    // 【修正箇所】取得後の「全体の数」が151に到達したかだけで判定
+                    let currentUniqueCount = new Set(userStates[currentUser]).size;
+                    if (currentUniqueCount === 151) {
+                        isCompleteTriggered = true;
+                        break;
+                    }
                 }
             }
 
@@ -385,14 +384,19 @@
                 msgEl.innerText = `やったぜ！\n${caughtText.join('\nと\n')}\nを ゲットしたよ！`;
             }
 
+            // ループを回さなかった場合（すでにコンプ済みだった場合）の最終チェック
+            let finalUniqueCount = new Set(userStates[currentUser]).size;
+
             if (isCompleteTriggered) {
                 ballEl.innerText = "🏆";
                 msgEl.innerText += "\n\nすごい！ コンプリート！\nつぎの せだいへ すすもう！";
                 completeAction.style.display = "block";
                 normalAction.style.display = "none";
-            } else if (unowned.length === 0 && caughtText.length === 0) {
+            } else if (finalUniqueCount === 151 && caughtText.length === 0) {
                 ballEl.innerText = "🏆";
                 msgEl.innerText = "すごい！ コンプリート！\nつぎの バージョンで あたらしい ポケモンが\nふえるから まっててね！";
+                completeAction.style.display = "block";
+                normalAction.style.display = "none";
             }
 
             if (firebaseReady) await window.dbSaveData(currentUser, userStates[currentUser]);
@@ -420,7 +424,6 @@
             let item = document.createElement('div');
             item.className = "zukan-item";
             if (ownedIds.includes(poke.id)) {
-                // クリックイベントを追加
                 item.onclick = () => openModal(poke.id);
                 item.innerHTML = `<div style="color:#64748b; font-size:9px;">No.${poke.id}</div><img src="${poke.image}" alt="${poke.name}"><div style="font-weight:bold; white-space:nowrap; overflow:hidden;">${poke.name}</div>`;
             } else {
