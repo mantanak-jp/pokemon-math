@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>ポケモンさんすう V2 評価用</title>
+    <style>
+        body { font-family: sans-serif; background: #eef2f7; display: flex; justify-content: center; padding: 10px; }
+        .app-container { width: 100%; max-width: 450px; background: white; padding: 20px; border-radius: 20px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); min-height: 85vh; }
+        .screen { display: none; }
+        .screen.active { display: block; }
+        
+        /* クイズ画面用の一行表示エリア */
+        .quiz-status-bar { display: flex; justify-content: space-between; font-size: 14px; font-weight: bold; color: #64748b; margin-bottom: 20px; padding: 0 10px; }
+        
+        /* 図鑑のタブと地方名 */
+        .gen-tabs { display: flex; gap: 5px; margin-bottom: 10px; overflow-x: auto; padding-bottom: 5px; }
+        .gen-tab { background: #e2e8f0; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: bold; }
+        .gen-tab.active { background: #3b4cca; color: white; }
+        .region-label { font-size: 18px; font-weight: bold; margin: 10px 0; }
+
+        button { background: #3b4cca; color: white; border: none; padding: 15px; width: 100%; border-radius: 12px; margin-top: 10px; font-weight: bold; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <div id="screen-title" class="screen active">
+        <h1>ポケモンさんすう</h1>
+        <button onclick="show('screen-menu')">はじめる</button>
+    </div>
+
+    <div id="screen-menu" class="screen">
+        <div style="text-align:center; color:#64748b; font-size:14px; margin-bottom:20px;">#1：カントー地方 を ぼうけんちゅう</div>
+        <h2>メニュー</h2>
+        <button onclick="show('screen-quiz')">クイズであそぶ</button>
+        <button onclick="show('screen-zukan')">ずかんをみる</button>
+    </div>
+
+    <div id="screen-quiz" class="screen">
+        <div class="quiz-status-bar">
+            <span>だい1もん</span>
+            <span>カントー地方</span>
+            <span>せいかい：0</span>
+        </div>
+        <div style="font-size:32px; font-weight:bold; text-align:center; margin:40px 0;">53 + 15 = ?</div>
+        <button onclick="show('screen-result')">67</button>
+        <button onclick="show('screen-result')">68</button>
+    </div>
+
+    <div id="screen-result" class="screen">
+        <h2>やったね！</h2>
+        <p>ポケモンを ゲットしたよ！</p>
+        <button onclick="show('screen-menu')">メニューにもどる</button>
+    </div>
+
+    <div id="screen-zukan" class="screen">
+        <h2>ずかん</h2>
+        <div class="gen-tabs" id="gen-tabs"></div>
+        <div class="region-label" id="region-name">カントー地方</div>
+        <div style="border:1px solid #ccc; height:200px; display:flex; align-items:center; justify-content:center;">（ポケモンリスト）</div>
+        <button onclick="show('screen-menu')">メニューにもどる</button>
+    </div>
+</div>
+
+<script>
+    const regions = ["カントー", "ジョウト", "ホウエン", "シンオウ", "イッシュ", "カロス", "アローラ", "ガラル", "パルデア"];
+    const maxGen = 2; // 到達世代の管理
+
+    function show(id) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+    }
+
+    // タブ生成
+    const tabsContainer = document.getElementById('gen-tabs');
+    for(let i=0; i <= maxGen; i++) {
+        tabsContainer.innerHTML += `<div class="gen-tab ${i===0?'active':''}" onclick="updateZukan(${i})">#${i+1}</div>`;
+    }
+
+    function updateZukan(i) {
+        document.getElementById('region-name').innerText = `${regions[i]}地方`;
+        document.querySelectorAll('.gen-tab').forEach((t, index) => t.className = `gen-tab ${index===i?'active':''}`);
+    }
+</script>
+</body>
+</html>
