@@ -76,17 +76,21 @@
 
 ## 7. canary配下HTMLの扱い
 
-`canary/` 配下には、現時点で少なくとも以下の3つのHTMLがありました。
+現在存在する参考HTML:
+canary/index_ui.html
+canary/index_dev_masterdata_2.html
 
-- `canary/index.html`
-- `canary/index_ui.html`
-- `canary/index_dev_masterdata_2.html`
+過去に存在したが削除済み:
+旧 canary/index.html
 
-これらはすべて、今後のV2本実装では参考扱いとします。
+旧 canary/index.html は今後の参照対象にしない
+
+新しい V2 Canary正本として、canary/index.html を新規作成する
 
 ### 7.1 `canary/index.html`
 
-過去に存在しましたが、現在は削除されています。
+過去に存在しましたが、現在は削除されています。旧ファイルは参考にする必要はありません。
+
 今後新しい V2 Canary正本として /canary/index.html を新規作成します。
 
 ### 7.2 `canary/index_ui.html`
