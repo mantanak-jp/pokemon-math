@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>ポケモン さんすう V2 Canary</title>
+
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+    <style>
+        :root {
+            --pokemon-blue: #3b4cca;
+            --pokemon-blue-dark: #24368f;
+            --pokemon-yellow: #ffcb05;
+            --pokemon-yellow-soft: #fff3b0;
+            --sky: #dff7ff;
+            --card: #ffffff;
+            --text: #233044;
+            --muted: #64748b;
+            --success: #16a34a;
+            --danger: #dc2626;
+            --warning: #f59e0b;
+            --border: #dbeafe;
+            --shadow: 0 18px 45px rgba(37, 99, 235, 0.18);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            min-height: 100%;
+            margin: 0;
+        }
+
+        body {
+            font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic", "Meiryo", system-ui, sans-serif;
+            color: var(--text);
+            background:
+                radial-gradient(circle at 15% 15%, rgba(255, 203, 5, 0.55), transparent 26%),
+                radial-gradient(circle at 88% 10%, rgba(59, 76, 202, 0.20), transparent 30%),
+                linear-gradient(160deg, #e0f7ff 0%, #f8fbff 48%, #fff7d6 100%);
+            display: flex;
+            justify-content: center;
+            align-items: stretch;
+            padding: 14px;
+        }
+
+        .app {
+            width: min(100%, 460px);
+            min-height: calc(100vh - 28px);
+            background: rgba(255, 255, 255, 0.88);
+            border: 4px solid rgba(59, 76, 202, 0.18);
+            border-radius: 28px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            backdrop-filter: blur(10px);
+        }
+
+        .app-header {
+            padding: 18px 18px 10px;
+            text-align: center;
+            background: linear-gradient(135deg, rgba(59, 76, 202, 0.12), rgba(255, 203, 5, 0.26));
+            border-bottom: 1px solid rgba(59, 76, 202, 0.12);
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 999px;
+            background: var(--pokemon-yellow);
+            color: #3b2f00;
+            font-size: 0.82rem;
+            font-weight: 800;
+            letter-spacing: 0.03em;
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.25);
+        }
+
+        .title {
+            margin: 12px 0 4px;
+            color: var(--pokemon-blue);
+            font-size: clamp(2rem, 10vw, 3rem);
+            line-height: 1.05;
+            font-weight: 900;
+            letter-spacing: 0.03em;
+            text-shadow:
+                2px 2px 0 var(--pokemon-yellow),
+                0 5px 16px rgba(59, 76, 202, 0.16);
+        }
+
+        .subtitle {
+            margin: 0;
+            color: var(--muted);
+            font-size: 0.96rem;
+            font-weight: 700;
+        }
+
+        main {
+            flex: 1;
+            display: flex;
+        }
+
+        .screen {
+            display: none;
+            width: 100%;
+            min-height: 100%;
+            padding: 22px 18px 24px;
+            flex-direction: column;
+            align-items: stretch;
+            justify-content: center;
+            gap: 16px;
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        .panel {
+            background: var(--card);
+            border: 2px solid var(--border);
+            border-radius: 24px;
+            padding: 18px;
+            box-shadow: 0 10px 28px rgba(59, 76, 202, 0.10);
+        }
+
+        .center {
+            text-align: center;
+        }
+
+        h2 {
+            margin: 0 0 10px;
+            font-size: 1.45rem;
+            color: var(--pokemon-blue-dark);
+            line-height: 1.3;
+        }
+
+        p {
+            margin: 8px 0;
+            line-height: 1.75;
+            font-size: 1rem;
+        }
+
+        .small {
+            color: var(--muted);
+            font-size: 0.9rem;
+        }
+
+        .button-stack {
+            display: grid;
+            gap: 12px;
+        }
+
+        button {
+            appearance: none;
+            border: 0;
+            width: 100%;
+            min-height: 56px;
+            border-radius: 18px;
+            padding: 14px 16px;
+            font: inherit;
+            font-size: 1.05rem;
+            font-weight: 900;
+            cursor: pointer;
+            color: #ffffff;
+            background: linear-gradient(135deg, var(--pokemon-blue), #2563eb);
+            box-shadow: 0 8px 0 var(--pokemon-blue-dark), 0 14px 22px rgba(37, 99, 235, 0.20);
+            transition: transform 0.08s ease, box-shadow 0.08s ease, filter 0.12s ease;
+            touch-action: manipulation;
+        }
+
+        button:active {
+            transform: translateY(4px) scale(0.98);
+            box-shadow: 0 4px 0 var(--pokemon-blue-dark), 0 8px 16px rgba(37, 99, 235, 0.18);
+        }
+
+        button:focus-visible {
+            outline: 4px solid rgba(255, 203, 5, 0.88);
+            outline-offset: 3px;
+        }
+
+        button:disabled {
+            cursor: not-allowed;
+            filter: grayscale(0.25);
+            opacity: 0.65;
+            transform: none;
+        }
+
+        .secondary-button {
+            color: #2f3b52;
+            background: linear-gradient(135deg, var(--pokemon-yellow), #ffd84d);
+            box-shadow: 0 8px 0 #d5a700, 0 14px 22px rgba(245, 158, 11, 0.18);
+        }
+
+        .secondary-button:active {
+            box-shadow: 0 4px 0 #d5a700, 0 8px 16px rgba(245, 158, 11, 0.16);
+        }
+
+        .ghost-button {
+            color: var(--pokemon-blue-dark);
+            background: #eef5ff;
+            border: 2px solid #c7ddff;
+            box-shadow: none;
+        }
+
+        .danger-button {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            box-shadow: 0 8px 0 #991b1b, 0 14px 22px rgba(220, 38, 38, 0.16);
+        }
+
+        .status-card {
+            border-radius: 22px;
+            padding: 18px;
+            background: #f8fbff;
+            border: 2px dashed #bfdbfe;
+        }
+
+        .profile-name {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 150px;
+            padding: 10px 16px;
+            border-radius: 999px;
+            background: var(--pokemon-yellow-soft);
+            border: 2px solid var(--pokemon-yellow);
+            color: #4b3d00;
+            font-size: 1.35rem;
+            font-weight: 900;
+        }
+
+        .menu-grid {
+            display: grid;
+            gap: 12px;
+            margin-top: 8px;
+        }
+
+        .stat {
+            display: grid;
+            gap: 4px;
+            padding: 14px;
+            border-radius: 18px;
+            background: linear-gradient(135deg, #eff6ff, #ffffff);
+            border: 1px solid #dbeafe;
+        }
+
+        .stat-label {
+            color: var(--muted);
+            font-size: 0.86rem;
+            font-weight: 800;
+        }
+
+        .stat-value {
+            color: var(--pokemon-blue-dark);
+            font-size: 1.18rem;
+            font-weight: 900;
+            line-height: 1.35;
+        }
+
+        .notice {
+            display: none;
+            border-radius: 18px;
+            padding: 12px 14px;
+            font-weight: 800;
+            line-height: 1.6;
+            text-align: center;
+        }
+
+        .notice.show {
+            display: block;
+        }
+
+        .notice.info {
+            background: #eff6ff;
+            color: #1d4ed8;
+            border: 2px solid #bfdbfe;
+        }
+
+        .notice.error {
+            background: #fff1f2;
+            color: #be123c;
+            border: 2px solid #fecdd3;
+        }
+
+        .loader {
+            width: 54px;
+            height: 54px;
+            border-radius: 999px;
+            border: 7px solid #dbeafe;
+            border-top-color: var(--pokemon-blue);
+            margin: 2px auto 14px;
+            animation: spin 0.9s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .footer-note {
+            padding: 10px 16px 16px;
+            color: var(--muted);
+            text-align: center;
+            font-size: 0.78rem;
+        }
+
+        @media (max-width: 380px) {
+            body {
+                padding: 8px;
+            }
+
+            .app {
+                min-height: calc(100vh - 16px);
+                border-radius: 22px;
+            }
+
+            .screen {
+                padding: 18px 14px 20px;
+            }
+
+            button {
+                min-height: 52px;
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <header class="app-header">
+            <div class="badge">V2 Canary</div>
+            <h1 class="title">ポケモン<br>さんすう</h1>
+            <p class="subtitle">世代を すすめる あたらしい ぼうけん</p>
+        </header>
+
+        <main>
+            <section id="screen-title" class="screen active" aria-labelledby="title-heading">
+                <div class="panel center">
+                    <h2 id="title-heading">V2を はじめるよ！</h2>
+                    <p>ユーザーを えらんで、V2のデータを よみこみます。</p>
+                    <p class="small">このページは Canaryばんです。</p>
+                    <div id="firebase-status" class="notice info show">じゅんびしています...</div>
+                </div>
+
+                <div class="button-stack">
+                    <button id="start-button" type="button" disabled>はじめる</button>
+                </div>
+            </section>
+
+            <section id="screen-user" class="screen" aria-labelledby="user-heading">
+                <div class="panel center">
+                    <h2 id="user-heading">だれで あそぶ？</h2>
+                    <p class="small">V2のユーザーデータを よみこみます。</p>
+                </div>
+
+                <div class="button-stack">
+                    <button type="button" data-user-id="ryoma">りょうま</button>
+                    <button type="button" data-user-id="sara">さら</button>
+                    <button type="button" data-user-id="guest">ゲスト</button>
+                </div>
+
+                <button id="user-back-button" class="ghost-button" type="button">タイトルへ もどる</button>
+            </section>
+
+            <section id="screen-loading" class="screen" aria-live="polite" aria-labelledby="loading-heading">
+                <div class="panel center">
+                    <div class="loader" aria-hidden="true"></div>
+                    <h2 id="loading-heading">よみこみ中...</h2>
+                    <p>V2のデータを よみこんでいます。</p>
+                    <p id="loading-user-name" class="small"></p>
+                </div>
+            </section>
+
+            <section id="screen-menu" class="screen" aria-labelledby="menu-heading">
+                <div class="panel center">
+                    <h2 id="menu-heading">メニュー</h2>
+                    <div id="menu-display-name" class="profile-name">---</div>
+
+                    <div class="menu-grid">
+                        <div class="stat">
+                            <div class="stat-label">いまの 世代</div>
+                            <div id="menu-generation" class="stat-value">---</div>
+                        </div>
+
+                        <div class="stat">
+                            <div class="stat-label">いまの 世代の ゲット数</div>
+                            <div id="menu-owned-count" class="stat-value">---</div>
+                        </div>
+                    </div>
+
+                    <div id="placeholder-message" class="notice info" role="status">
+                        このきのうは これから つくります
+                    </div>
+                </div>
+
+                <div class="button-stack">
+                    <button id="start-math-button" class="secondary-button" type="button">さんすうを はじめる</button>
+                    <button id="open-zukan-button" type="button">ずかんを みる</button>
+                    <button id="change-user-button" class="ghost-button" type="button">ユーザーを えらびなおす</button>
+                </div>
+            </section>
+
+            <section id="screen-error" class="screen" aria-live="assertive" aria-labelledby="error-heading">
+                <div class="panel center">
+                    <h2 id="error-heading">データを よみこめませんでした</h2>
+                    <div id="error-message" class="notice error show">
+                        V2のユーザーデータがまだありません。
+                    </div>
+                    <p class="small">データは じどうでは つくりません。</p>
+                </div>
+
+                <div class="button-stack">
+                    <button id="retry-button" type="button">もういちど よみこむ</button>
+                    <button id="error-user-button" class="ghost-button" type="button">ユーザーを えらびなおす</button>
+                </div>
+            </section>
+        </main>
+
+        <div class="footer-note">
+            Step 6-1: users_v2 の よみこみだけを おこないます
+        </div>
+    </div>
+
+    <script>
+        "use strict";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDeFo0Xwsr4QgwCHVKrc5kIT03Rvfe7xQw",
+            authDomain: "pokemon-math-app.firebaseapp.com",
+            projectId: "pokemon-math-app",
+            storageBucket: "pokemon-math-app.firebasestorage.app",
+            messagingSenderId: "1002462273438",
+            appId: "1:1002462273438:web:646cd240932dfaf6cd808f"
+        };
+
+        const USER_OPTIONS = {
+            ryoma: { label: "りょうま" },
+            sara: { label: "さら" },
+            guest: { label: "ゲスト" }
+        };
+
+        const GENERATION_NAMES = [
+            "",
+            "第1世代（カントー）",
+            "第2世代（ジョウト）",
+            "第3世代（ホウエン）",
+            "第4世代（シンオウ）",
+            "第5世代（イッシュ）",
+            "第6世代（カロス）",
+            "第7世代（アローラ）",
+            "第8世代（ガラル）",
+            "第9世代（パルデア）"
+        ];
+
+        let db = null;
+        let firebaseReady = false;
+        let selectedUserId = null;
+        let selectedUserLabel = "";
+        let currentUserData = null;
+        let isLoadingUser = false;
+
+        const screens = {
+            title: document.getElementById("screen-title"),
+            user: document.getElementById("screen-user"),
+            loading: document.getElementById("screen-loading"),
+            menu: document.getElementById("screen-menu"),
+            error: document.getElementById("screen-error")
+        };
+
+        const startButton = document.getElementById("start-button");
+        const firebaseStatus = document.getElementById("firebase-status");
+        const loadingUserName = document.getElementById("loading-user-name");
+        const menuDisplayName = document.getElementById("menu-display-name");
+        const menuGeneration = document.getElementById("menu-generation");
+        const menuOwnedCount = document.getElementById("menu-owned-count");
+        const placeholderMessage = document.getElementById("placeholder-message");
+        const errorMessage = document.getElementById("error-message");
+        const retryButton = document.getElementById("retry-button");
+
+        function showScreen(screenName) {
+            Object.values(screens).forEach(function(screen) {
+                screen.classList.remove("active");
+            });
+            screens[screenName].classList.add("active");
+            hidePlaceholderMessage();
+        }
+
+        function setFirebaseStatus(message, kind) {
+            firebaseStatus.textContent = message;
+            firebaseStatus.className = "notice show " + (kind || "info");
+        }
+
+        function showError(message) {
+            errorMessage.textContent = message;
+            showScreen("error");
+        }
+
+        function showPlaceholderMessage() {
+            placeholderMessage.classList.add("show");
+            window.setTimeout(function() {
+                placeholderMessage.classList.remove("show");
+            }, 2400);
+        }
+
+        function hidePlaceholderMessage() {
+            placeholderMessage.classList.remove("show");
+        }
+
+        function initFirebase() {
+            try {
+                if (typeof firebase === "undefined") {
+                    throw new Error("Firebase SDK を読み込めませんでした。");
+                }
+
+                if (!firebase.apps.length) {
+                    firebase.initializeApp(firebaseConfig);
+                }
+
+                db = firebase.firestore();
+                firebaseReady = true;
+                startButton.disabled = false;
+                setFirebaseStatus("じゅんびできました！", "info");
+            } catch (error) {
+                firebaseReady = false;
+                startButton.disabled = true;
+                setFirebaseStatus("Firebaseのじゅんびに しっぱいしました", "error");
+                showError("Firebaseのじゅんびに しっぱいしました。しばらくしてから もういちどためしてください。");
+            }
+        }
+
+        function validateUserData(data) {
+            if (!data || typeof data !== "object") {
+                return "V2のユーザーデータが ただしくありません。";
+            }
+
+            if (typeof data.displayName !== "string" || data.displayName.trim() === "") {
+                return "displayName が ありません。";
+            }
+
+            if (!Number.isInteger(data.cleared_generations) || data.cleared_generations < 0 || data.cleared_generations > 9) {
+                return "cleared_generations は 0から9の せいすうにしてください。";
+            }
+
+            if (!Array.isArray(data.current_gen_owned)) {
+                return "current_gen_owned が はいれつでは ありません。";
+            }
+
+            const hasInvalidOwnedId = data.current_gen_owned.some(function(value) {
+                return !Number.isInteger(value);
+            });
+
+            if (hasInvalidOwnedId) {
+                return "current_gen_owned は せいすうだけの はいれつにしてください。";
+            }
+
+            return "";
+        }
+
+        function getGenerationText(clearedGenerations) {
+            if (clearedGenerations === 9) {
+                return "全世代コンプリート！";
+            }
+
+            const currentGeneration = clearedGenerations + 1;
+            return GENERATION_NAMES[currentGeneration] || "せだいが わかりません";
+        }
+
+        function renderMenu(userData) {
+            const ownedCount = userData.current_gen_owned.length;
+
+            menuDisplayName.textContent = userData.displayName;
+            menuGeneration.textContent = getGenerationText(userData.cleared_generations);
+
+            if (userData.cleared_generations === 9) {
+                menuOwnedCount.textContent = "ぜんぶ ゲット！";
+            } else {
+                menuOwnedCount.textContent = ownedCount + "ひき ゲット！";
+            }
+
+            showScreen("menu");
+        }
+
+        async function loadUserData(userId) {
+            if (isLoadingUser) {
+                return;
+            }
+
+            if (!firebaseReady || !db) {
+                showError("Firebaseのじゅんびが まだできていません。");
+                return;
+            }
+
+            if (!USER_OPTIONS[userId]) {
+                showError("えらんだ ユーザーが ただしくありません。");
+                return;
+            }
+
+            selectedUserId = userId;
+            selectedUserLabel = USER_OPTIONS[userId].label;
+            loadingUserName.textContent = selectedUserLabel + " のデータを よみこみ中";
+            isLoadingUser = true;
+            retryButton.disabled = true;
+            showScreen("loading");
+
+            try {
+                const docSnap = await db.collection("users_v2").doc(userId).get();
+
+                if (!docSnap.exists) {
+                    throw new Error("V2のユーザーデータがまだありません。");
+                }
+
+                const data = docSnap.data();
+                const validationError = validateUserData(data);
+
+                if (validationError) {
+                    throw new Error(validationError);
+                }
+
+                currentUserData = {
+                    displayName: data.displayName.trim(),
+                    cleared_generations: data.cleared_generations,
+                    current_gen_owned: data.current_gen_owned.slice()
+                };
+
+                renderMenu(currentUserData);
+            } catch (error) {
+                const message = error && error.message
+                    ? error.message
+                    : "Firestoreから データを よみこめませんでした。";
+                showError(message);
+            } finally {
+                isLoadingUser = false;
+                retryButton.disabled = false;
+            }
+        }
+
+        function retryLoadUserData() {
+            if (!selectedUserId) {
+                showScreen("user");
+                return;
+            }
+
+            loadUserData(selectedUserId);
+        }
+
+        function setupEvents() {
+            startButton.addEventListener("click", function() {
+                if (!firebaseReady) {
+                    showError("Firebaseのじゅんびが まだできていません。");
+                    return;
+                }
+                showScreen("user");
+            });
+
+            document.querySelectorAll("[data-user-id]").forEach(function(button) {
+                button.addEventListener("click", function() {
+                    loadUserData(button.dataset.userId);
+                });
+            });
+
+            document.getElementById("user-back-button").addEventListener("click", function() {
+                showScreen("title");
+            });
+
+            document.getElementById("start-math-button").addEventListener("click", function() {
+                showPlaceholderMessage();
+            });
+
+            document.getElementById("open-zukan-button").addEventListener("click", function() {
+                showPlaceholderMessage();
+            });
+
+            document.getElementById("change-user-button").addEventListener("click", function() {
+                selectedUserId = null;
+                selectedUserLabel = "";
+                currentUserData = null;
+                showScreen("user");
+            });
+
+            retryButton.addEventListener("click", retryLoadUserData);
+
+            document.getElementById("error-user-button").addEventListener("click", function() {
+                showScreen("user");
+            });
+        }
+
+        setupEvents();
+        initFirebase();
+    </script>
+</body>
+</html>
