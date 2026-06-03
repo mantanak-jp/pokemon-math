@@ -24,10 +24,6 @@
     * { box-sizing: border-box; }
     html, body { min-height: 100%; margin: 0; }
 
-    body.modal-open {
-      overflow: hidden;
-    }
-
     body {
       font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic", "Meiryo", system-ui, sans-serif;
       color: var(--text);
@@ -429,6 +425,7 @@
       display: grid;
       gap: 10px;
       text-align: center;
+      flex: 0 0 auto;
     }
 
     .zukan-title {
@@ -480,14 +477,8 @@
       text-align: center;
     }
 
-    .zukan-summary-name {
-      font-size: 1.08rem;
-    }
-
-    .zukan-summary-count {
-      color: #334155;
-      font-size: 0.98rem;
-    }
+    .zukan-summary-name { font-size: 1.08rem; }
+    .zukan-summary-count { color: #334155; font-size: 0.98rem; }
 
     .zukan-message {
       min-height: 24px;
@@ -502,6 +493,14 @@
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 9px;
+      max-height: min(58vh, 520px);
+      max-height: min(58dvh, 520px);
+      overflow-y: auto;
+      padding: 10px;
+      border-radius: 18px;
+      background: rgba(248, 251, 255, 0.9);
+      border: 1px solid #dbeafe;
+      -webkit-overflow-scrolling: touch;
     }
 
     .zukan-card {
@@ -510,7 +509,6 @@
       border-radius: 16px;
       border: 2px solid #dbeafe;
       background: linear-gradient(180deg, #ffffff, #f8fbff);
-      box-shadow: 0 7px 16px rgba(59, 76, 202, 0.09);
       color: #334155;
       display: grid;
       place-items: center;
@@ -530,10 +528,7 @@
       color: #64748b;
     }
 
-    .zukan-card:active {
-      transform: translateY(2px) scale(0.98);
-      box-shadow: none;
-    }
+    .zukan-card:active { transform: translateY(2px) scale(0.98); box-shadow: none; }
 
     .zukan-card-image {
       width: 100%;
@@ -573,6 +568,7 @@
       min-height: 180px;
       display: grid;
       place-items: center;
+      gap: 12px;
       padding: 24px;
       border-radius: 22px;
       background: linear-gradient(180deg, #ffffff, #eff6ff);
@@ -581,19 +577,23 @@
       font-weight: 900;
       line-height: 1.6;
       text-align: center;
-      box-shadow: 0 10px 24px rgba(37, 99, 235, 0.10);
     }
 
     .zukan-loading::before {
       content: "";
-      display: block;
-      width: 38px;
-      height: 38px;
-      margin: 0 auto 12px;
+      width: 42px;
+      height: 42px;
       border-radius: 999px;
       border: 6px solid #dbeafe;
       border-top-color: var(--pokemon-blue);
       animation: spin 0.9s linear infinite;
+    }
+
+    .zukan-actions { flex: 0 0 auto; }
+
+    .screen.zukan-screen {
+      overflow: hidden;
+      min-height: 0;
     }
 
     .modal-backdrop {
@@ -607,11 +607,10 @@
       background: rgba(15, 23, 42, 0.48);
     }
 
-    .modal-backdrop.show {
-      display: flex;
-    }
+    .modal-backdrop.show { display: flex; }
 
     .pokemon-modal {
+      position: relative;
       width: min(100%, 420px);
       max-height: calc(100vh - 64px);
       max-height: calc(100dvh - 64px);
@@ -624,8 +623,27 @@
       text-align: center;
     }
 
+    .modal-close-button {
+      position: absolute;
+      top: 10px;
+      right: 12px;
+      width: 40px;
+      min-height: 40px;
+      padding: 0;
+      border-radius: 999px;
+      background: #eef5ff;
+      border: 2px solid #c7ddff;
+      color: #24368f;
+      box-shadow: none;
+      font-size: 1.6rem;
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    .modal-close-button:active { transform: scale(0.95); box-shadow: none; }
+
     .modal-title {
-      margin: 0 0 8px;
+      margin: 0 28px 8px;
       color: var(--pokemon-blue-dark);
       font-size: 1.65rem;
       font-weight: 900;
@@ -641,14 +659,12 @@
       filter: drop-shadow(0 10px 12px rgba(15, 23, 42, 0.16));
     }
 
-    .modal-image.image-error {
-      display: none;
-    }
+    .modal-image.image-error { display: none; }
 
     .modal-details {
       display: grid;
       gap: 8px;
-      margin: 10px 0 14px;
+      margin: 10px 0 4px;
       text-align: left;
     }
 
@@ -664,16 +680,8 @@
       font-size: 0.95rem;
     }
 
-    .modal-detail-label {
-      color: var(--muted);
-      font-weight: 900;
-    }
-
-    .modal-detail-value {
-      color: #334155;
-      font-weight: 800;
-      white-space: pre-line;
-    }
+    .modal-detail-label { color: var(--muted); font-weight: 900; }
+    .modal-detail-value { color: #334155; font-weight: 800; white-space: pre-line; }
 
     .notice {
       display: none;
@@ -721,7 +729,12 @@
       .quiz-alert { font-size: 1.2rem; }
       .reward-card { width: min(48%, 132px); }
       .reward-card img { max-width: 92px; }
-      .zukan-grid { gap: 7px; }
+      .zukan-grid {
+        gap: 7px;
+        padding: 8px;
+        max-height: min(56vh, 480px);
+        max-height: min(56dvh, 480px);
+      }
       .zukan-card { min-height: 116px; padding: 6px 4px; border-radius: 14px; }
       .zukan-card-image { max-width: 62px; }
       .zukan-card-question { width: 60px; height: 60px; font-size: 1.9rem; }
@@ -733,9 +746,8 @@
 <body>
   <div class="app" id="app-shell">
     <header class="app-header">
-      <div class="badge">V2 Canary 202606031730</div>
-      <h1 class="title">ポケモンさんすう</h1>
-      <p class="subtitle">世代を すすめる あたらしい ぼうけん</p>
+      <div class="badge">V2 Canary 202606031930</div>
+      <h1 class="title">ポケモンさんすう</h1>      <p class="subtitle">世代を すすめる あたらしい ぼうけん</p>
     </header>
 
     <main>
@@ -853,7 +865,7 @@
 
         <div id="zukan-grid" class="zukan-grid" aria-label="ポケモンずかん"></div>
 
-        <div class="button-stack">
+        <div class="button-stack zukan-actions">
           <button id="zukan-menu-button" class="ghost-button" type="button">メニューへ もどる</button>
         </div>
       </section>
@@ -873,30 +885,30 @@
     </main>
 
     <div class="footer-note">Canary テストばん / データの よみこみだけを おこないます</div>
+  </div>
 
-    <div id="pokemon-modal-backdrop" class="modal-backdrop" aria-hidden="true">
-      <div class="pokemon-modal" role="dialog" aria-modal="true" aria-labelledby="modal-pokemon-name">
-        <h2 id="modal-pokemon-name" class="modal-title">---</h2>
-        <img id="modal-pokemon-image" class="modal-image" src="" alt="" />
-        <div class="modal-details">
-          <div class="modal-detail-row">
-            <div class="modal-detail-label">タイプ</div>
-            <div id="modal-pokemon-types" class="modal-detail-value">ふめい</div>
-          </div>
-          <div class="modal-detail-row">
-            <div class="modal-detail-label">高さ</div>
-            <div id="modal-pokemon-height" class="modal-detail-value">ふめい</div>
-          </div>
-          <div class="modal-detail-row">
-            <div class="modal-detail-label">重さ</div>
-            <div id="modal-pokemon-weight" class="modal-detail-value">ふめい</div>
-          </div>
-          <div class="modal-detail-row">
-            <div class="modal-detail-label">せつめい</div>
-            <div id="modal-pokemon-flavor" class="modal-detail-value">せつめいは まだありません。</div>
-          </div>
+  <div id="pokemon-modal-backdrop" class="modal-backdrop" aria-hidden="true">
+    <div class="pokemon-modal" role="dialog" aria-modal="true" aria-labelledby="modal-pokemon-name">
+      <button id="modal-close-button" class="modal-close-button" type="button" aria-label="とじる">×</button>
+      <h2 id="modal-pokemon-name" class="modal-title">---</h2>
+      <img id="modal-pokemon-image" class="modal-image" src="" alt="" />
+      <div class="modal-details">
+        <div class="modal-detail-row">
+          <div class="modal-detail-label">タイプ</div>
+          <div id="modal-pokemon-types" class="modal-detail-value">ふめい</div>
         </div>
-        <button id="modal-close-button" type="button">とじる</button>
+        <div class="modal-detail-row">
+          <div class="modal-detail-label">高さ</div>
+          <div id="modal-pokemon-height" class="modal-detail-value">ふめい</div>
+        </div>
+        <div class="modal-detail-row">
+          <div class="modal-detail-label">重さ</div>
+          <div id="modal-pokemon-weight" class="modal-detail-value">ふめい</div>
+        </div>
+        <div class="modal-detail-row">
+          <div class="modal-detail-label">せつめい</div>
+          <div id="modal-pokemon-flavor" class="modal-detail-value">せつめいは まだありません。</div>
+        </div>
       </div>
     </div>
   </div>
@@ -996,6 +1008,7 @@
     const zukanMessage = document.getElementById("zukan-message");
     const zukanGrid = document.getElementById("zukan-grid");
     const pokemonModalBackdrop = document.getElementById("pokemon-modal-backdrop");
+    const pokemonModalPanel = document.querySelector(".pokemon-modal");
     const modalPokemonName = document.getElementById("modal-pokemon-name");
     const modalPokemonImage = document.getElementById("modal-pokemon-image");
     const modalPokemonTypes = document.getElementById("modal-pokemon-types");
@@ -1115,9 +1128,7 @@
           currentGenerationMasterPromise = null;
           return null;
         });
-    }
-
-    async function getCurrentGenerationMaster(userData) {
+    }    async function getCurrentGenerationMaster(userData) {
       if (currentGenerationPokemonList) return currentGenerationPokemonList;
       if (currentGenerationMasterPromise) {
         const prefetchedPokemonList = await currentGenerationMasterPromise;
@@ -1716,7 +1727,7 @@
 
     function renderZukanLoading(generation) {
       zukanGenerationName.textContent = GENERATION_NAMES[generation] || "世代が わかりません";
-      zukanGenerationCount.textContent = "ポケモンデータを よみこんでいます...";
+      zukanGenerationCount.textContent = "";
       zukanMessage.textContent = "";
       zukanGrid.innerHTML = '<div class="zukan-loading">ポケモンデータを よみこんでいます...</div>';
     }
@@ -1886,14 +1897,12 @@
 
       pokemonModalBackdrop.classList.add("show");
       pokemonModalBackdrop.setAttribute("aria-hidden", "false");
-      document.body.classList.add("modal-open");
     }
 
     function closePokemonModal() {
       pokemonModalBackdrop.classList.remove("show");
       pokemonModalBackdrop.setAttribute("aria-hidden", "true");
       modalPokemonImage.removeAttribute("src");
-      document.body.classList.remove("modal-open");
     }
 
     function setupEvents() {
@@ -1922,6 +1931,10 @@
       document.getElementById("user-back-button").addEventListener("click", function() { showScreen("title"); });
       document.getElementById("open-zukan-button").addEventListener("click", openZukan);
       document.getElementById("zukan-menu-button").addEventListener("click", function() { renderFastMenu(currentUserData); });
+      pokemonModalBackdrop.addEventListener("click", closePokemonModal);
+      pokemonModalPanel.addEventListener("click", function(event) {
+        event.stopPropagation();
+      });
       document.getElementById("modal-close-button").addEventListener("click", closePokemonModal);
       document.getElementById("change-user-button").addEventListener("click", function() {
         selectedUserId = null;
