@@ -15,7 +15,6 @@
 | パス | 位置づけ |
 | --- | --- |
 | `index.html` | V1.5 本番版。明示的な Issue と承認がない限り変更しません。 |
-| `canary/index.html` | V2 図鑑遷移プロトタイプ。参考用です。 |
 | `canary/index_ui.html` | V2 UI 評価用プロトタイプ。参考用です。 |
 | `canary/index_dev_masterdata_2.html` | マスターデータ取得・Firestore投入用の開発ダッシュボード。マスターデータ取得完了後は参考用です。 |
 
