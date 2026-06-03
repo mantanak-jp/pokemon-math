@@ -837,9 +837,24 @@
 
     function makeChoices(correctAnswer) {
       const choices = [correctAnswer];
+      const candidates = [];
+      for (let diff = -4; diff <= 4; diff++) {
+        const candidate = correctAnswer + diff;
+        if (candidate >= 0 && candidate !== correctAnswer) {
+          candidates.push(candidate);
+        }
+      }
+      shuffleArray(candidates).forEach(function(candidate) {
+        if (choices.length < 4 && !choices.includes(candidate)) {
+          choices.push(candidate);
+        }
+      });
+      let fallback = 0;
       while (choices.length < 4) {
-        const candidate = correctAnswer + randomInt(-4, 4);
-        if (candidate >= 0 && !choices.includes(candidate)) choices.push(candidate);
+        if (!choices.includes(fallback)) {
+          choices.push(fallback);
+        }
+        fallback += 1;
       }
       return shuffleArray(choices);
     }
@@ -918,14 +933,17 @@
       }, QUIZ_NEXT_DELAY_MS);
     }
 
+    function getRewardPlaceholderMessage(score) {
+      if (score >= 4) {
+        return "つぎは ポケモンを ゲットするよ！\nゲットの しくみは これから つくります。";
+      }
+      return "おしい！\nもういちど ちょうせん しよう！";
+    }
+
     function showResult() {
       quizProgress.style.width = "100%";
       resultScore.textContent = QUIZ_QUESTION_COUNT + "もん中 " + correctCount + "もん せいかい！";
-      if (correctCount >= 4) {
-        resultMessage.textContent = "つぎは ポケモンを ゲットするよ！\nゲットの しくみは これから つくります。";
-      } else {
-        resultMessage.textContent = "おしい！\nもういちど ちょうせん しよう！";
-      }
+      resultMessage.textContent = getRewardPlaceholderMessage(correctCount);
       showScreen("result");
     }
 
