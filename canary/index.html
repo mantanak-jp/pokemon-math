@@ -317,6 +317,7 @@
     .answer-button {
       min-height: 70px;
       font-size: clamp(1.7rem, 8vw, 2.35rem);
+      border-radius: 20px;
     }
 
     .answer-button.correct {
@@ -359,6 +360,64 @@
       line-height: 1.75;
       text-align: center;
       white-space: pre-line;
+    }
+
+    .reward-images {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      margin: 12px 0 4px;
+    }
+
+    .reward-card {
+      width: min(46%, 145px);
+      margin: 0;
+      padding: 10px;
+      border-radius: 18px;
+      background: linear-gradient(180deg, #ffffff, #eff6ff);
+      border: 2px solid #dbeafe;
+      box-shadow: 0 8px 18px rgba(59, 76, 202, 0.10);
+    }
+
+    .reward-card img {
+      display: block;
+      width: 100%;
+      max-width: 104px;
+      aspect-ratio: 1 / 1;
+      object-fit: contain;
+      margin: 0 auto;
+      filter: drop-shadow(0 8px 8px rgba(15, 23, 42, 0.16));
+    }
+
+    .reward-card.image-error img { display: none; }
+
+    .reward-name {
+      display: block;
+      margin-top: 4px;
+      color: #334155;
+      font-size: 0.9rem;
+      font-weight: 900;
+      line-height: 1.3;
+      text-align: center;
+    }
+
+    .result-save-status {
+      margin: 8px 0 0;
+      color: var(--pokemon-blue-dark);
+      font-size: 1rem;
+      font-weight: 900;
+      line-height: 1.6;
+      text-align: center;
+      white-space: pre-line;
+    }
+
+    .result-save-status.success { color: #15803d; }
+    .result-save-status.error { color: #be123c; }
+
+    .retry-reward-button.hidden,
+    .reward-images.hidden {
+      display: none;
     }
 
     .notice {
@@ -405,6 +464,8 @@
       .level-button { font-size: 0.98rem; }
       .answer-button { min-height: 64px; }
       .quiz-alert { font-size: 1.2rem; }
+      .reward-card { width: min(48%, 132px); }
+      .reward-card img { max-width: 92px; }
     }
   </style>
 </head>
@@ -507,7 +568,10 @@
         <div class="panel hero-panel center">
           <h2 id="result-heading">あそびおわったよ！</h2>
           <div id="result-score" class="result-score">5もん中 0もん せいかい！</div>
+          <div id="result-reward-images" class="reward-images hidden" aria-live="polite"></div>
           <p id="result-message" class="result-message">ポケモンゲットは これから つくります。</p>
+          <p id="result-save-status" class="result-save-status"></p>
+          <button id="retry-reward-button" class="secondary-button retry-reward-button hidden" type="button">もういちどゲットする</button>
         </div>
         <div class="button-stack">
           <button id="result-retry-button" type="button">もういちど</button>
@@ -582,6 +646,9 @@
     let currentCorrectAnswer = 0;
     let isAnswered = false;
     let quizTimerId = null;
+    let pendingRewardPokemon = [];
+    let pendingRewardPokemonList = [];
+    let isSavingReward = false;
 
     const appShell = document.getElementById("app-shell");
     const screens = {
@@ -608,7 +675,12 @@
     const quizAlert = document.getElementById("quiz-alert");
     const answerButtons = Array.from(document.querySelectorAll(".answer-button"));
     const resultScore = document.getElementById("result-score");
+    const resultRewardImages = document.getElementById("result-reward-images");
     const resultMessage = document.getElementById("result-message");
+    const resultSaveStatus = document.getElementById("result-save-status");
+    const retryRewardButton = document.getElementById("retry-reward-button");
+    const resultRetryButton = document.getElementById("result-retry-button");
+    const resultMenuButton = document.getElementById("result-menu-button");
     const errorMessage = document.getElementById("error-message");
     const retryButton = document.getElementById("retry-button");
 
@@ -876,6 +948,9 @@
       currentQuestionIndex = 0;
       correctCount = 0;
       isAnswered = false;
+      pendingRewardPokemon = [];
+      pendingRewardPokemonList = [];
+      isSavingReward = false;
       if (quizTimerId) window.clearTimeout(quizTimerId);
       quizTimerId = null;
       quizScore.textContent = "せいかい: 0";
@@ -935,16 +1010,304 @@
 
     function getRewardPlaceholderMessage(score) {
       if (score >= 4) {
-        return "つぎは ポケモンを ゲットするよ！\nゲットの しくみは これから つくります。";
+        return "ポケモンを ゲットしているよ...";
       }
       return "おしい！\nもういちど ちょうせん しよう！";
     }
 
-    function showResult() {
+    function getRewardCount(score) {
+      if (score >= 5) return 2;
+      if (score >= 4) return 1;
+      return 0;
+    }
+
+    function getLevelPoolLimit(level, pokemonList) {
+      const maxLocalId = pokemonList.reduce(function(maxValue, pokemon) {
+        return Math.max(maxValue, pokemon.local_id);
+      }, 0);
+
+      if (level === 1 || level === 2) return Math.min(100, maxLocalId);
+      if (level === 3) return Math.min(143, maxLocalId);
+      return maxLocalId;
+    }
+
+    function selectRewardPokemon(pokemonList, ownedIds, rewardCount, level) {
+      if (rewardCount <= 0) return [];
+
+      const ownedSet = new Set(ownedIds);
+      const poolLimit = getLevelPoolLimit(level, pokemonList);
+      const levelPoolCandidates = pokemonList.filter(function(pokemon) {
+        return Number.isInteger(pokemon.local_id)
+          && pokemon.local_id >= 1
+          && pokemon.local_id <= poolLimit
+          && !ownedSet.has(pokemon.local_id);
+      });
+
+      const fallbackCandidates = pokemonList.filter(function(pokemon) {
+        return Number.isInteger(pokemon.local_id) && !ownedSet.has(pokemon.local_id);
+      });
+
+      const candidates = levelPoolCandidates.length > 0 ? levelPoolCandidates : fallbackCandidates;
+      return shuffleArray(candidates).slice(0, rewardCount);
+    }
+
+    async function prepareRewardState(rewardCount) {
+      if (!currentUserData || currentUserData.cleared_generations === 9 || rewardCount <= 0) {
+        pendingRewardPokemon = [];
+        pendingRewardPokemonList = [];
+        return [];
+      }
+
+      const pokemonList = await getCurrentGenerationMaster(currentUserData);
+      const uniqueOwnedIds = Array.from(new Set(currentUserData.current_gen_owned));
+      const selectedPokemon = selectRewardPokemon(pokemonList, uniqueOwnedIds, rewardCount, selectedLevel);
+
+      pendingRewardPokemonList = pokemonList;
+      pendingRewardPokemon = selectedPokemon;
+      return selectedPokemon;
+    }
+
+    function formatPokemonNames(pokemonList) {
+      const names = pokemonList.map(function(pokemon) {
+        return pokemon.name || ("local_id " + pokemon.local_id);
+      });
+
+      if (names.length === 0) return "";
+      if (names.length === 1) return names[0];
+      return names.slice(0, -1).join("と ") + "と " + names[names.length - 1];
+    }
+
+    function renderRewardImages(pokemonList) {
+      resultRewardImages.innerHTML = "";
+      if (!pokemonList || pokemonList.length === 0) {
+        resultRewardImages.classList.add("hidden");
+        return;
+      }
+
+      pokemonList.forEach(function(pokemon) {
+        const figure = document.createElement("figure");
+        figure.className = "reward-card";
+
+        const image = document.createElement("img");
+        image.src = pokemon.image || "";
+        image.alt = pokemon.name || "ゲットした ポケモン";
+        image.loading = "lazy";
+        image.onerror = function() {
+          figure.classList.add("image-error");
+        };
+
+        const caption = document.createElement("figcaption");
+        caption.className = "reward-name";
+        caption.textContent = pokemon.name || "???";
+
+        figure.appendChild(image);
+        figure.appendChild(caption);
+        resultRewardImages.appendChild(figure);
+      });
+
+      resultRewardImages.classList.remove("hidden");
+    }
+
+    function setResultActionDisabled(disabled) {
+      resultRetryButton.disabled = disabled;
+      resultMenuButton.disabled = disabled;
+    }
+
+    function renderRewardSaving() {
+      isSavingReward = true;
+      setResultActionDisabled(true);
+      retryRewardButton.classList.add("hidden");
+      retryRewardButton.disabled = true;
+      resultSaveStatus.className = "result-save-status";
+      resultSaveStatus.textContent = "";
+      renderRewardImages([]);
+      resultMessage.textContent = "ポケモンを ゲットしているよ...";
+    }
+
+    function renderRewardSuccess(caughtPokemon, isGenerationComplete) {
+      isSavingReward = false;
+      setResultActionDisabled(false);
+      retryRewardButton.classList.add("hidden");
+      retryRewardButton.disabled = true;
+
+      renderRewardImages(caughtPokemon);
+
+      if (caughtPokemon.length > 0) {
+        resultMessage.textContent = formatPokemonNames(caughtPokemon) + "を ゲット！";
+      } else {
+        resultMessage.textContent = "このポケモンは ゲットずみです。";
+      }
+
+      resultSaveStatus.className = "result-save-status success";
+      resultSaveStatus.textContent = isGenerationComplete
+        ? "ほぞんできました！\nこの世代のポケモンを ぜんぶ ゲットしたよ！"
+        : "ほぞんできました！";
+    }
+
+    function renderRewardFailure() {
+      isSavingReward = false;
+      setResultActionDisabled(false);
+      resultMessage.textContent = "ゲットできませんでした";
+      resultSaveStatus.className = "result-save-status error";
+      resultSaveStatus.textContent = "";
+      retryRewardButton.classList.remove("hidden");
+      retryRewardButton.disabled = false;
+    }
+
+    function renderNoRewardResult(score) {
+      renderRewardImages([]);
+      retryRewardButton.classList.add("hidden");
+      retryRewardButton.disabled = true;
+      resultSaveStatus.className = "result-save-status";
+      resultSaveStatus.textContent = "";
+      resultMessage.textContent = getRewardPlaceholderMessage(score);
+      setResultActionDisabled(false);
+    }
+
+    function renderNoAvailableReward() {
+      renderRewardImages([]);
+      retryRewardButton.classList.add("hidden");
+      retryRewardButton.disabled = true;
+      resultMessage.textContent = "この世代のポケモンは\nぜんぶ ゲットずみ！";
+      resultSaveStatus.className = "result-save-status";
+      resultSaveStatus.textContent = "";
+      setResultActionDisabled(false);
+    }
+
+    function calculateGenerationComplete(userData, pokemonList) {
+      if (!pokemonList || pokemonList.length === 0) return false;
+      const validLocalIds = new Set(pokemonList.map(function(pokemon) {
+        return pokemon.local_id;
+      }));
+      const ownedSet = new Set(userData.current_gen_owned);
+      const validOwnedCount = Array.from(ownedSet).filter(function(localId) {
+        return validLocalIds.has(localId);
+      }).length;
+      return validOwnedCount >= pokemonList.length;
+    }
+
+    async function savePendingRewardOnce() {
+      if (!selectedUserId || !currentUserData || pendingRewardPokemon.length === 0) {
+        return {
+          caughtPokemon: [],
+          isGenerationComplete: false
+        };
+      }
+
+      const rewardLocalIds = pendingRewardPokemon.map(function(pokemon) {
+        return pokemon.local_id;
+      });
+
+      const userDocRef = db.collection("users_v2").doc(selectedUserId);
+
+      const transactionResult = await db.runTransaction(async function(transaction) {
+        const docSnap = await transaction.get(userDocRef);
+        if (!docSnap.exists) {
+          throw new Error("ユーザーデータがまだありません。");
+        }
+
+        const latestData = docSnap.data();
+        const validationError = validateUserData(latestData);
+        if (validationError) {
+          throw new Error(validationError);
+        }
+
+        const latestOwned = Array.from(new Set(latestData.current_gen_owned));
+        const latestOwnedSet = new Set(latestOwned);
+        const idsToAdd = rewardLocalIds.filter(function(localId) {
+          return !latestOwnedSet.has(localId);
+        });
+        const nextOwned = latestOwned.concat(idsToAdd);
+
+        transaction.update(userDocRef, {
+          current_gen_owned: nextOwned,
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        return {
+          displayName: latestData.displayName.trim(),
+          cleared_generations: latestData.cleared_generations,
+          current_gen_owned: nextOwned,
+          addedLocalIds: idsToAdd
+        };
+      });
+
+      currentUserData = {
+        displayName: transactionResult.displayName,
+        cleared_generations: transactionResult.cleared_generations,
+        current_gen_owned: transactionResult.current_gen_owned.slice()
+      };
+
+      const actuallyCaughtPokemon = pendingRewardPokemon.filter(function(pokemon) {
+        return transactionResult.addedLocalIds.includes(pokemon.local_id);
+      });
+
+      const shownPokemon = actuallyCaughtPokemon.length > 0 ? actuallyCaughtPokemon : pendingRewardPokemon;
+      const isGenerationComplete = calculateGenerationComplete(currentUserData, pendingRewardPokemonList);
+
+      return {
+        caughtPokemon: shownPokemon,
+        isGenerationComplete: isGenerationComplete
+      };
+    }
+
+    async function savePendingRewardWithRetry() {
+      try {
+        return await savePendingRewardOnce();
+      } catch (firstError) {
+        try {
+          return await savePendingRewardOnce();
+        } catch (secondError) {
+          throw secondError;
+        }
+      }
+    }
+
+    async function handleRewardSave() {
+      if (isSavingReward || pendingRewardPokemon.length === 0) return;
+
+      renderRewardSaving();
+
+      try {
+        const saveResult = await savePendingRewardWithRetry();
+        renderRewardSuccess(saveResult.caughtPokemon, saveResult.isGenerationComplete);
+      } catch (error) {
+        renderRewardFailure();
+      }
+    }
+
+    async function showResult() {
       quizProgress.style.width = "100%";
       resultScore.textContent = QUIZ_QUESTION_COUNT + "もん中 " + correctCount + "もん せいかい！";
-      resultMessage.textContent = getRewardPlaceholderMessage(correctCount);
+      resultMessage.textContent = "";
+      resultSaveStatus.className = "result-save-status";
+      resultSaveStatus.textContent = "";
+      retryRewardButton.classList.add("hidden");
+      retryRewardButton.disabled = true;
+      renderRewardImages([]);
+      setResultActionDisabled(false);
       showScreen("result");
+
+      const rewardCount = getRewardCount(correctCount);
+      if (rewardCount <= 0) {
+        renderNoRewardResult(correctCount);
+        return;
+      }
+
+      renderRewardSaving();
+
+      try {
+        const selectedPokemon = await prepareRewardState(rewardCount);
+        if (selectedPokemon.length === 0) {
+          isSavingReward = false;
+          renderNoAvailableReward();
+          return;
+        }
+        isSavingReward = false;
+        await handleRewardSave();
+      } catch (error) {
+        renderRewardFailure();
+      }
     }
 
     function setupEvents() {
@@ -977,11 +1340,27 @@
         selectedUserLabel = "";
         currentUserData = null;
         currentGeneration = null;
+        pendingRewardPokemon = [];
+        pendingRewardPokemonList = [];
         resetCachedMaster();
         showScreen("user");
       });
-      document.getElementById("result-retry-button").addEventListener("click", function() { startQuiz(selectedLevel); });
-      document.getElementById("result-menu-button").addEventListener("click", function() { renderFastMenu(currentUserData); });
+      resultRetryButton.addEventListener("click", function() {
+        if (isSavingReward) return;
+        startQuiz(selectedLevel);
+      });
+      resultMenuButton.addEventListener("click", function() {
+        if (isSavingReward) return;
+        renderFastMenu(currentUserData);
+      });
+      retryRewardButton.addEventListener("click", function() {
+        if (isSavingReward) return;
+        if (pendingRewardPokemon.length > 0) {
+          handleRewardSave();
+        } else {
+          showResult();
+        }
+      });
       retryButton.addEventListener("click", retryLoadUserData);
       document.getElementById("error-user-button").addEventListener("click", function() { showScreen("user"); });
     }
