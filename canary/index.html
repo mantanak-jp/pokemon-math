@@ -56,6 +56,10 @@
       border-bottom: 1px solid rgba(59, 76, 202, 0.12);
     }
 
+    .app.hide-header .app-header {
+      display: none;
+    }
+
     .badge {
       display: inline-flex;
       padding: 6px 12px;
@@ -204,12 +208,6 @@
       box-shadow: none;
     }
 
-    .inline-button {
-      min-height: 46px;
-      margin-top: 10px;
-      box-shadow: 0 6px 0 var(--pokemon-blue-dark), 0 10px 18px rgba(37, 99, 235, 0.16);
-    }
-
     .menu-header {
       text-align: center;
       display: grid;
@@ -228,36 +226,15 @@
 
     .progress-strip {
       width: 100%;
-      display: grid;
-      gap: 4px;
       padding: 10px 12px;
       border-radius: 16px;
       background: linear-gradient(135deg, #f8fbff, #ffffff);
       border: 1px solid #cfe3ff;
       box-shadow: 0 6px 18px rgba(37, 99, 235, 0.08);
-    }
-
-    .stat-value {
       color: var(--pokemon-blue-dark);
-      font-size: 1.05rem;
+      font-size: 1.02rem;
       font-weight: 900;
-      line-height: 1.35;
-    }
-
-    .progress-row {
-      display: flex;
-      justify-content: center;
-      align-items: baseline;
-      gap: 10px;
-      flex-wrap: wrap;
-      color: #334155;
-      font-size: 0.98rem;
-      font-weight: 900;
-      line-height: 1.4;
-    }
-
-    .remaining-summary {
-      color: var(--muted);
+      line-height: 1.45;
     }
 
     .level-stack { margin-top: 2px; }
@@ -279,20 +256,6 @@
       background: linear-gradient(135deg, var(--pokemon-yellow), #ffd84d);
       box-shadow: 0 8px 0 #d5a700, 0 14px 22px rgba(245, 158, 11, 0.18);
     }
-
-    .progress-error {
-      display: none;
-      margin-top: 8px;
-      border-radius: 14px;
-      padding: 10px;
-      background: #fff1f2;
-      border: 2px solid #fecdd3;
-      color: #be123c;
-      font-weight: 900;
-      line-height: 1.55;
-    }
-
-    .progress-error.show { display: block; }
 
     .notice {
       display: none;
@@ -334,13 +297,13 @@
       .starter-row { gap: 6px; }
       .starter-card { padding: 7px 4px; border-radius: 18px; }
       .starter-card img { max-width: 78px; }
-      .progress-row { gap: 6px; font-size: 0.92rem; }
+      .progress-strip { font-size: 0.95rem; }
       .level-button { font-size: 0.98rem; }
     }
   </style>
 </head>
 <body>
-  <div class="app">
+  <div class="app" id="app-shell">
     <header class="app-header">
       <div class="badge">V2 Canary</div>
       <h1 class="title">ポケモンさんすう</h1>
@@ -400,17 +363,7 @@
       <section id="screen-menu" class="screen menu-screen" aria-labelledby="menu-heading">
         <div class="menu-header">
           <h2 id="menu-heading" class="menu-title">✨ <span id="menu-display-name">---</span> の メニュー ✨</h2>
-          <div class="progress-strip" aria-live="polite">
-            <div id="menu-generation" class="stat-value">---</div>
-            <div class="progress-row">
-              <span id="menu-progress-summary">---</span>
-              <span id="menu-remaining-summary" class="remaining-summary">---</span>
-            </div>
-            <div id="master-error-box" class="progress-error">
-              <div>ポケモンデータを よみこめませんでした</div>
-              <button id="retry-master-button" class="inline-button" type="button">もういちど よみこむ</button>
-            </div>
-          </div>
+          <div id="menu-progress" class="progress-strip" aria-live="polite">---</div>
           <div id="placeholder-message" class="notice info" role="status">このきのうは これから つくります</div>
         </div>
 
@@ -481,9 +434,12 @@
     let selectedUserLabel = "";
     let currentUserData = null;
     let currentGeneration = null;
+    let currentGenerationPokemonList = null;
+    let currentGenerationMasterPromise = null;
+    let currentGenerationMasterError = null;
     let isLoadingUser = false;
-    let isLoadingMaster = false;
 
+    const appShell = document.getElementById("app-shell");
     const screens = {
       title: document.getElementById("screen-title"),
       user: document.getElementById("screen-user"),
@@ -496,11 +452,7 @@
     const loadingMainMessage = document.getElementById("loading-main-message");
     const loadingUserName = document.getElementById("loading-user-name");
     const menuDisplayName = document.getElementById("menu-display-name");
-    const menuGeneration = document.getElementById("menu-generation");
-    const menuProgressSummary = document.getElementById("menu-progress-summary");
-    const menuRemainingSummary = document.getElementById("menu-remaining-summary");
-    const masterErrorBox = document.getElementById("master-error-box");
-    const retryMasterButton = document.getElementById("retry-master-button");
+    const menuProgress = document.getElementById("menu-progress");
     const placeholderMessage = document.getElementById("placeholder-message");
     const errorMessage = document.getElementById("error-message");
     const retryButton = document.getElementById("retry-button");
@@ -510,6 +462,7 @@
         screen.classList.remove("active");
       });
       screens[screenName].classList.add("active");
+      appShell.classList.toggle("hide-header", screenName !== "title" && screenName !== "user");
       hidePlaceholderMessage();
     }
 
@@ -574,53 +527,25 @@
       return GENERATION_NAMES[nextGeneration] || "世代が わかりません";
     }
 
-    function calculateProgress(userData, pokemonList) {
-      const validLocalIds = new Set(pokemonList.map(function(pokemon) { return pokemon.local_id; }));
-      const uniqueOwnedIds = new Set(userData.current_gen_owned);
-      const ownedCount = Array.from(uniqueOwnedIds).filter(function(localId) { return validLocalIds.has(localId); }).length;
-      const totalCount = pokemonList.length;
-      const remainingCount = Math.max(totalCount - ownedCount, 0);
-      return { totalCount, ownedCount, remainingCount };
+    function resetCachedMaster() {
+      currentGenerationPokemonList = null;
+      currentGenerationMasterPromise = null;
+      currentGenerationMasterError = null;
     }
 
-    function resetMasterError() {
-      masterErrorBox.classList.remove("show");
-      retryMasterButton.disabled = false;
-    }
-
-    function renderMenuBase(userData) {
+    function renderFastMenu(userData) {
+      const ownedCount = new Set(userData.current_gen_owned).size;
       menuDisplayName.textContent = userData.displayName;
-      menuGeneration.textContent = getGenerationText(userData.cleared_generations);
-      menuProgressSummary.textContent = "";
-      menuRemainingSummary.textContent = "";
-      resetMasterError();
-    }
-
-    function renderCompleteMenu(userData) {
-      renderMenuBase(userData);
-      menuGeneration.textContent = "全世代コンプリート！";
-      menuProgressSummary.textContent = "ぜんぶの 世代を クリアしたよ！";
-      menuRemainingSummary.textContent = "";
-      showScreen("menu");
-    }
-
-    function renderMenuWithProgress(userData, pokemonList) {
-      const progress = calculateProgress(userData, pokemonList);
-      renderMenuBase(userData);
-      menuProgressSummary.textContent = progress.totalCount + "ひき中 " + progress.ownedCount + "ひき ゲット！";
-      menuRemainingSummary.textContent = "あと " + progress.remainingCount + "ひき";
-      showScreen("menu");
-    }
-
-    function renderMenuWithMasterError(userData) {
-      renderMenuBase(userData);
-      menuProgressSummary.textContent = "ポケモンデータを よみこめませんでした";
-      menuRemainingSummary.textContent = "";
-      masterErrorBox.classList.add("show");
+      if (userData.cleared_generations === 9) {
+        menuProgress.textContent = "全世代コンプリート！";
+      } else {
+        menuProgress.textContent = getGenerationText(userData.cleared_generations) + "  " + ownedCount + "ひき ゲットずみ！";
+      }
       showScreen("menu");
     }
 
     async function loadCurrentGenerationMaster(userData) {
+      if (userData.cleared_generations === 9) return [];
       currentGeneration = userData.cleared_generations + 1;
       const docSnap = await db.collection("masters").doc("gen_" + currentGeneration).get();
       if (!docSnap.exists) throw new Error("ポケモンデータが まだありません。");
@@ -631,32 +556,38 @@
       return pokemonList;
     }
 
-    async function loadAndRenderMaster(userData, showLoadingScreen) {
-      if (isLoadingMaster) return;
-      if (!firebaseReady || !db) {
-        renderMenuWithMasterError(userData);
-        return;
+    function prefetchCurrentGenerationMaster(userData) {
+      if (!firebaseReady || !db || !userData || userData.cleared_generations === 9) return;
+      if (currentGenerationMasterPromise || currentGenerationPokemonList) return;
+      currentGenerationMasterError = null;
+      currentGenerationMasterPromise = loadCurrentGenerationMaster(userData)
+        .then(function(pokemonList) {
+          currentGenerationPokemonList = pokemonList;
+          return pokemonList;
+        })
+        .catch(function(error) {
+          currentGenerationMasterError = error;
+          currentGenerationMasterPromise = null;
+          return null;
+        });
+    }
+
+    async function getCurrentGenerationMaster(userData) {
+      if (currentGenerationPokemonList) return currentGenerationPokemonList;
+      if (currentGenerationMasterPromise) {
+        const prefetchedPokemonList = await currentGenerationMasterPromise;
+        if (prefetchedPokemonList) return prefetchedPokemonList;
       }
-      if (userData.cleared_generations === 9) {
-        currentGeneration = null;
-        renderCompleteMenu(userData);
-        return;
-      }
-      isLoadingMaster = true;
-      retryMasterButton.disabled = true;
-      if (showLoadingScreen) {
-        setLoadingMessage("ポケモンデータを よみこんでいます...", getGenerationText(userData.cleared_generations));
-        showScreen("loading");
-      }
-      try {
-        const pokemonList = await loadCurrentGenerationMaster(userData);
-        renderMenuWithProgress(userData, pokemonList);
-      } catch (error) {
-        renderMenuWithMasterError(userData);
-      } finally {
-        isLoadingMaster = false;
-        retryMasterButton.disabled = false;
-      }
+      if (currentGenerationMasterError) currentGenerationMasterError = null;
+      currentGenerationMasterPromise = loadCurrentGenerationMaster(userData)
+        .then(function(pokemonList) {
+          currentGenerationPokemonList = pokemonList;
+          return pokemonList;
+        })
+        .finally(function() {
+          currentGenerationMasterPromise = null;
+        });
+      return currentGenerationMasterPromise;
     }
 
     async function loadUserData(userId) {
@@ -673,6 +604,7 @@
       selectedUserLabel = USER_OPTIONS[userId].label;
       currentUserData = null;
       currentGeneration = null;
+      resetCachedMaster();
       setLoadingMessage("データを よみこんでいます。", selectedUserLabel + " のデータを よみこみ中");
       isLoadingUser = true;
       retryButton.disabled = true;
@@ -696,7 +628,8 @@
         isLoadingUser = false;
         retryButton.disabled = false;
       }
-      await loadAndRenderMaster(currentUserData, true);
+      renderFastMenu(currentUserData);
+      prefetchCurrentGenerationMaster(currentUserData);
     }
 
     function retryLoadUserData() {
@@ -705,14 +638,6 @@
         return;
       }
       loadUserData(selectedUserId);
-    }
-
-    function retryLoadMaster() {
-      if (!currentUserData) {
-        showScreen("user");
-        return;
-      }
-      loadAndRenderMaster(currentUserData, true);
     }
 
     function setupEvents() {
@@ -730,6 +655,7 @@
       });
       document.querySelectorAll("[data-level]").forEach(function(button) {
         button.addEventListener("click", function() {
+          if (currentUserData) prefetchCurrentGenerationMaster(currentUserData);
           showPlaceholderMessage("レベル " + button.dataset.level + " は これから つくります");
         });
       });
@@ -740,10 +666,10 @@
         selectedUserLabel = "";
         currentUserData = null;
         currentGeneration = null;
+        resetCachedMaster();
         showScreen("user");
       });
       retryButton.addEventListener("click", retryLoadUserData);
-      retryMasterButton.addEventListener("click", retryLoadMaster);
       document.getElementById("error-user-button").addEventListener("click", function() { showScreen("user"); });
     }
 
