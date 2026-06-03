@@ -14,23 +14,17 @@
             --pokemon-blue-dark: #24368f;
             --pokemon-yellow: #ffcb05;
             --pokemon-yellow-soft: #fff3b0;
-            --sky: #dff7ff;
             --card: #ffffff;
             --text: #233044;
             --muted: #64748b;
-            --success: #16a34a;
             --danger: #dc2626;
-            --warning: #f59e0b;
             --border: #dbeafe;
             --shadow: 0 18px 45px rgba(37, 99, 235, 0.18);
         }
 
-        * {
-            box-sizing: border-box;
-        }
+        * { box-sizing: border-box; }
 
-        html,
-        body {
+        html, body {
             min-height: 100%;
             margin: 0;
         }
@@ -39,8 +33,9 @@
             font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic", "Meiryo", system-ui, sans-serif;
             color: var(--text);
             background:
-                radial-gradient(circle at 15% 15%, rgba(255, 203, 5, 0.55), transparent 26%),
-                radial-gradient(circle at 88% 10%, rgba(59, 76, 202, 0.20), transparent 30%),
+                radial-gradient(circle at 14% 12%, rgba(255, 203, 5, 0.58), transparent 25%),
+                radial-gradient(circle at 88% 10%, rgba(59, 76, 202, 0.22), transparent 30%),
+                radial-gradient(circle at 52% 88%, rgba(34, 197, 94, 0.14), transparent 26%),
                 linear-gradient(160deg, #e0f7ff 0%, #f8fbff 48%, #fff7d6 100%);
             display: flex;
             justify-content: center;
@@ -49,9 +44,9 @@
         }
 
         .app {
-            width: min(100%, 460px);
+            width: min(100%, 480px);
             min-height: calc(100vh - 28px);
-            background: rgba(255, 255, 255, 0.88);
+            background: rgba(255, 255, 255, 0.9);
             border: 4px solid rgba(59, 76, 202, 0.18);
             border-radius: 28px;
             box-shadow: var(--shadow);
@@ -64,7 +59,7 @@
         .app-header {
             padding: 18px 18px 10px;
             text-align: center;
-            background: linear-gradient(135deg, rgba(59, 76, 202, 0.12), rgba(255, 203, 5, 0.26));
+            background: linear-gradient(135deg, rgba(59, 76, 202, 0.12), rgba(255, 203, 5, 0.28));
             border-bottom: 1px solid rgba(59, 76, 202, 0.12);
         }
 
@@ -89,9 +84,7 @@
             line-height: 1.05;
             font-weight: 900;
             letter-spacing: 0.03em;
-            text-shadow:
-                2px 2px 0 var(--pokemon-yellow),
-                0 5px 16px rgba(59, 76, 202, 0.16);
+            text-shadow: 2px 2px 0 var(--pokemon-yellow), 0 5px 16px rgba(59, 76, 202, 0.16);
         }
 
         .subtitle {
@@ -117,9 +110,7 @@
             gap: 16px;
         }
 
-        .screen.active {
-            display: flex;
-        }
+        .screen.active { display: flex; }
 
         .panel {
             background: var(--card);
@@ -129,9 +120,14 @@
             box-shadow: 0 10px 28px rgba(59, 76, 202, 0.10);
         }
 
-        .center {
-            text-align: center;
+        .hero-panel {
+            background:
+                radial-gradient(circle at 20% 12%, rgba(255, 203, 5, 0.34), transparent 30%),
+                radial-gradient(circle at 86% 18%, rgba(34, 197, 94, 0.16), transparent 28%),
+                linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
         }
+
+        .center { text-align: center; }
 
         h2 {
             margin: 0 0 10px;
@@ -146,9 +142,76 @@
             font-size: 1rem;
         }
 
+        .lead {
+            color: #334155;
+            font-size: 1.05rem;
+            font-weight: 800;
+        }
+
         .small {
             color: var(--muted);
             font-size: 0.9rem;
+        }
+
+        .starter-row {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: end;
+            gap: 10px;
+            margin: 14px auto 4px;
+        }
+
+        .starter-card {
+            width: min(31%, 118px);
+            min-width: 88px;
+            border-radius: 22px;
+            padding: 8px 6px 9px;
+            background: linear-gradient(180deg, #ffffff 0%, #eff6ff 100%);
+            border: 2px solid #dbeafe;
+            box-shadow: 0 8px 18px rgba(59, 76, 202, 0.10);
+        }
+
+        .starter-card:nth-child(1) {
+            background: linear-gradient(180deg, #f0fdf4 0%, #dcfce7 100%);
+            border-color: #bbf7d0;
+        }
+
+        .starter-card:nth-child(2) {
+            background: linear-gradient(180deg, #fff7ed 0%, #fed7aa 100%);
+            border-color: #fdba74;
+        }
+
+        .starter-card:nth-child(3) {
+            background: linear-gradient(180deg, #eff6ff 0%, #dbeafe 100%);
+            border-color: #bfdbfe;
+        }
+
+        .starter-card img {
+            display: block;
+            width: 100%;
+            max-width: 90px;
+            aspect-ratio: 1 / 1;
+            object-fit: contain;
+            margin: 0 auto;
+            filter: drop-shadow(0 8px 8px rgba(15, 23, 42, 0.16));
+        }
+
+        .starter-card.image-error img { display: none; }
+
+        .starter-card.image-error {
+            min-height: 72px;
+            display: grid;
+            place-items: center;
+        }
+
+        .starter-name {
+            display: block;
+            margin-top: 2px;
+            color: #334155;
+            font-size: 0.82rem;
+            font-weight: 900;
+            line-height: 1.2;
         }
 
         .button-stack {
@@ -208,18 +271,6 @@
             box-shadow: none;
         }
 
-        .danger-button {
-            background: linear-gradient(135deg, #ef4444, #dc2626);
-            box-shadow: 0 8px 0 #991b1b, 0 14px 22px rgba(220, 38, 38, 0.16);
-        }
-
-        .status-card {
-            border-radius: 22px;
-            padding: 18px;
-            background: #f8fbff;
-            border: 2px dashed #bfdbfe;
-        }
-
         .profile-name {
             display: inline-flex;
             align-items: center;
@@ -271,9 +322,7 @@
             text-align: center;
         }
 
-        .notice.show {
-            display: block;
-        }
+        .notice.show { display: block; }
 
         .notice.info {
             background: #eff6ff;
@@ -298,9 +347,7 @@
         }
 
         @keyframes spin {
-            to {
-                transform: rotate(360deg);
-            }
+            to { transform: rotate(360deg); }
         }
 
         .footer-note {
@@ -311,23 +358,23 @@
         }
 
         @media (max-width: 380px) {
-            body {
-                padding: 8px;
-            }
-
+            body { padding: 8px; }
             .app {
                 min-height: calc(100vh - 16px);
                 border-radius: 22px;
             }
-
-            .screen {
-                padding: 18px 14px 20px;
-            }
-
+            .screen { padding: 18px 14px 20px; }
             button {
                 min-height: 52px;
                 font-size: 1rem;
             }
+            .starter-row { gap: 8px; }
+            .starter-card {
+                min-width: 82px;
+                padding: 7px 5px 8px;
+                border-radius: 18px;
+            }
+            .starter-name { font-size: 0.76rem; }
         }
     </style>
 </head>
@@ -341,9 +388,25 @@
 
         <main>
             <section id="screen-title" class="screen active" aria-labelledby="title-heading">
-                <div class="panel center">
-                    <h2 id="title-heading">V2を はじめるよ！</h2>
-                    <p>ユーザーを えらんで、V2のデータを よみこみます。</p>
+                <div class="panel hero-panel center">
+                    <h2 id="title-heading">ポケモンを ゲットしに いこう！</h2>
+                    <p class="lead">ユーザーを えらんで ぼうけんを はじめよう！</p>
+
+                    <div class="starter-row" aria-label="パルデアのポケモン">
+                        <figure class="starter-card">
+                            <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/906.png" alt="ニャオハ" loading="lazy" onerror="this.closest('.starter-card').classList.add('image-error');" />
+                            <figcaption class="starter-name">ニャオハ</figcaption>
+                        </figure>
+                        <figure class="starter-card">
+                            <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/909.png" alt="ホゲータ" loading="lazy" onerror="this.closest('.starter-card').classList.add('image-error');" />
+                            <figcaption class="starter-name">ホゲータ</figcaption>
+                        </figure>
+                        <figure class="starter-card">
+                            <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/912.png" alt="クワッス" loading="lazy" onerror="this.closest('.starter-card').classList.add('image-error');" />
+                            <figcaption class="starter-name">クワッス</figcaption>
+                        </figure>
+                    </div>
+
                     <p class="small">このページは Canaryばんです。</p>
                     <div id="firebase-status" class="notice info show">じゅんびしています...</div>
                 </div>
@@ -354,9 +417,24 @@
             </section>
 
             <section id="screen-user" class="screen" aria-labelledby="user-heading">
-                <div class="panel center">
+                <div class="panel hero-panel center">
                     <h2 id="user-heading">だれで あそぶ？</h2>
-                    <p class="small">V2のユーザーデータを よみこみます。</p>
+                    <p class="lead">ぼうけんする ユーザーを えらんでね。</p>
+
+                    <div class="starter-row" aria-label="パルデアのポケモン">
+                        <figure class="starter-card">
+                            <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/906.png" alt="ニャオハ" loading="lazy" onerror="this.closest('.starter-card').classList.add('image-error');" />
+                            <figcaption class="starter-name">ニャオハ</figcaption>
+                        </figure>
+                        <figure class="starter-card">
+                            <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/909.png" alt="ホゲータ" loading="lazy" onerror="this.closest('.starter-card').classList.add('image-error');" />
+                            <figcaption class="starter-name">ホゲータ</figcaption>
+                        </figure>
+                        <figure class="starter-card">
+                            <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/912.png" alt="クワッス" loading="lazy" onerror="this.closest('.starter-card').classList.add('image-error');" />
+                            <figcaption class="starter-name">クワッス</figcaption>
+                        </figure>
+                    </div>
                 </div>
 
                 <div class="button-stack">
@@ -372,7 +450,7 @@
                 <div class="panel center">
                     <div class="loader" aria-hidden="true"></div>
                     <h2 id="loading-heading">よみこみ中...</h2>
-                    <p>V2のデータを よみこんでいます。</p>
+                    <p>データを よみこんでいます。</p>
                     <p id="loading-user-name" class="small"></p>
                 </div>
             </section>
@@ -394,9 +472,7 @@
                         </div>
                     </div>
 
-                    <div id="placeholder-message" class="notice info" role="status">
-                        このきのうは これから つくります
-                    </div>
+                    <div id="placeholder-message" class="notice info" role="status">このきのうは これから つくります</div>
                 </div>
 
                 <div class="button-stack">
@@ -409,9 +485,7 @@
             <section id="screen-error" class="screen" aria-live="assertive" aria-labelledby="error-heading">
                 <div class="panel center">
                     <h2 id="error-heading">データを よみこめませんでした</h2>
-                    <div id="error-message" class="notice error show">
-                        V2のユーザーデータがまだありません。
-                    </div>
+                    <div id="error-message" class="notice error show">ユーザーデータがまだありません。</div>
                     <p class="small">データは じどうでは つくりません。</p>
                 </div>
 
@@ -422,9 +496,7 @@
             </section>
         </main>
 
-        <div class="footer-note">
-            Step 6-1: users_v2 の よみこみだけを おこないます
-        </div>
+        <div class="footer-note">Canary テストばん / データの よみこみだけを おこないます</div>
     </div>
 
     <script>
@@ -536,7 +608,7 @@
 
         function validateUserData(data) {
             if (!data || typeof data !== "object") {
-                return "V2のユーザーデータが ただしくありません。";
+                return "ユーザーデータが ただしくありません。";
             }
 
             if (typeof data.displayName !== "string" || data.displayName.trim() === "") {
@@ -568,7 +640,7 @@
             }
 
             const currentGeneration = clearedGenerations + 1;
-            return GENERATION_NAMES[currentGeneration] || "せだいが わかりません";
+            return GENERATION_NAMES[currentGeneration] || "世代が わかりません";
         }
 
         function renderMenu(userData) {
@@ -612,7 +684,7 @@
                 const docSnap = await db.collection("users_v2").doc(userId).get();
 
                 if (!docSnap.exists) {
-                    throw new Error("V2のユーザーデータがまだありません。");
+                    throw new Error("ユーザーデータがまだありません。");
                 }
 
                 const data = docSnap.data();
