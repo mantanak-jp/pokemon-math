@@ -80,10 +80,11 @@
         .title {
             margin: 12px 0 4px;
             color: var(--pokemon-blue);
-            font-size: clamp(2rem, 10vw, 3rem);
+            font-size: clamp(2rem, 8vw, 2.85rem);
             line-height: 1.05;
             font-weight: 900;
             letter-spacing: 0.03em;
+            white-space: nowrap;
             text-shadow: 2px 2px 0 var(--pokemon-yellow), 0 5px 16px rgba(59, 76, 202, 0.16);
         }
 
@@ -155,18 +156,20 @@
 
         .starter-row {
             display: flex;
-            flex-wrap: wrap;
+            flex-wrap: nowrap;
             justify-content: center;
             align-items: end;
-            gap: 10px;
-            margin: 14px auto 4px;
+            gap: 8px;
+            margin: 16px auto 4px;
         }
 
         .starter-card {
-            width: min(31%, 118px);
-            min-width: 88px;
-            border-radius: 22px;
-            padding: 8px 6px 9px;
+            flex: 1 1 0;
+            min-width: 0;
+            max-width: 118px;
+            margin: 0;
+            border-radius: 20px;
+            padding: 8px 5px 9px;
             background: linear-gradient(180deg, #ffffff 0%, #eff6ff 100%);
             border: 2px solid #dbeafe;
             box-shadow: 0 8px 18px rgba(59, 76, 202, 0.10);
@@ -190,7 +193,7 @@
         .starter-card img {
             display: block;
             width: 100%;
-            max-width: 90px;
+            max-width: 86px;
             aspect-ratio: 1 / 1;
             object-fit: contain;
             margin: 0 auto;
@@ -368,12 +371,12 @@
                 min-height: 52px;
                 font-size: 1rem;
             }
-            .starter-row { gap: 8px; }
+            .starter-row { gap: 6px; }
             .starter-card {
-                min-width: 82px;
-                padding: 7px 5px 8px;
+                padding: 7px 4px 8px;
                 border-radius: 18px;
             }
+            .starter-card img { max-width: 78px; }
             .starter-name { font-size: 0.76rem; }
         }
     </style>
@@ -382,7 +385,7 @@
     <div class="app">
         <header class="app-header">
             <div class="badge">V2 Canary</div>
-            <h1 class="title">ポケモン<br>さんすう</h1>
+            <h1 class="title">ポケモンさんすう</h1>
             <p class="subtitle">世代を すすめる あたらしい ぼうけん</p>
         </header>
 
@@ -390,7 +393,6 @@
             <section id="screen-title" class="screen active" aria-labelledby="title-heading">
                 <div class="panel hero-panel center">
                     <h2 id="title-heading">ポケモンを ゲットしに いこう！</h2>
-                    <p class="lead">ユーザーを えらんで ぼうけんを はじめよう！</p>
 
                     <div class="starter-row" aria-label="パルデアのポケモン">
                         <figure class="starter-card">
@@ -408,7 +410,7 @@
                     </div>
 
                     <p class="small">このページは Canaryばんです。</p>
-                    <div id="firebase-status" class="notice info show">じゅんびしています...</div>
+                    <div id="firebase-status" class="notice info" aria-hidden="true"></div>
                 </div>
 
                 <div class="button-stack">
@@ -546,7 +548,6 @@
         };
 
         const startButton = document.getElementById("start-button");
-        const firebaseStatus = document.getElementById("firebase-status");
         const loadingUserName = document.getElementById("loading-user-name");
         const menuDisplayName = document.getElementById("menu-display-name");
         const menuGeneration = document.getElementById("menu-generation");
@@ -561,11 +562,6 @@
             });
             screens[screenName].classList.add("active");
             hidePlaceholderMessage();
-        }
-
-        function setFirebaseStatus(message, kind) {
-            firebaseStatus.textContent = message;
-            firebaseStatus.className = "notice show " + (kind || "info");
         }
 
         function showError(message) {
@@ -597,11 +593,9 @@
                 db = firebase.firestore();
                 firebaseReady = true;
                 startButton.disabled = false;
-                setFirebaseStatus("じゅんびできました！", "info");
             } catch (error) {
                 firebaseReady = false;
                 startButton.disabled = true;
-                setFirebaseStatus("Firebaseのじゅんびに しっぱいしました", "error");
                 showError("Firebaseのじゅんびに しっぱいしました。しばらくしてから もういちどためしてください。");
             }
         }
