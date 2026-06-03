@@ -163,13 +163,17 @@
             margin: 16px auto 4px;
         }
 
+        .starter-row.compact {
+            margin: 0 auto 14px;
+        }
+
         .starter-card {
             flex: 1 1 0;
             min-width: 0;
             max-width: 118px;
             margin: 0;
             border-radius: 20px;
-            padding: 8px 5px 9px;
+            padding: 8px 5px;
             background: linear-gradient(180deg, #ffffff 0%, #eff6ff 100%);
             border: 2px solid #dbeafe;
             box-shadow: 0 8px 18px rgba(59, 76, 202, 0.10);
@@ -193,29 +197,14 @@
         .starter-card img {
             display: block;
             width: 100%;
-            max-width: 86px;
+            max-width: 88px;
             aspect-ratio: 1 / 1;
             object-fit: contain;
             margin: 0 auto;
             filter: drop-shadow(0 8px 8px rgba(15, 23, 42, 0.16));
         }
 
-        .starter-card.image-error img { display: none; }
-
-        .starter-card.image-error {
-            min-height: 72px;
-            display: grid;
-            place-items: center;
-        }
-
-        .starter-name {
-            display: block;
-            margin-top: 2px;
-            color: #334155;
-            font-size: 0.82rem;
-            font-weight: 900;
-            line-height: 1.2;
-        }
+        .starter-card.image-error { display: none; }
 
         .button-stack {
             display: grid;
@@ -373,11 +362,10 @@
             }
             .starter-row { gap: 6px; }
             .starter-card {
-                padding: 7px 4px 8px;
+                padding: 7px 4px;
                 border-radius: 18px;
             }
             .starter-card img { max-width: 78px; }
-            .starter-name { font-size: 0.76rem; }
         }
     </style>
 </head>
@@ -397,15 +385,12 @@
                     <div class="starter-row" aria-label="パルデアのポケモン">
                         <figure class="starter-card">
                             <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/906.png" alt="ニャオハ" loading="lazy" onerror="this.closest('.starter-card').classList.add('image-error');" />
-                            <figcaption class="starter-name">ニャオハ</figcaption>
                         </figure>
                         <figure class="starter-card">
                             <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/909.png" alt="ホゲータ" loading="lazy" onerror="this.closest('.starter-card').classList.add('image-error');" />
-                            <figcaption class="starter-name">ホゲータ</figcaption>
                         </figure>
                         <figure class="starter-card">
                             <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/912.png" alt="クワッス" loading="lazy" onerror="this.closest('.starter-card').classList.add('image-error');" />
-                            <figcaption class="starter-name">クワッス</figcaption>
                         </figure>
                     </div>
 
@@ -420,23 +405,20 @@
 
             <section id="screen-user" class="screen" aria-labelledby="user-heading">
                 <div class="panel hero-panel center">
-                    <h2 id="user-heading">だれで あそぶ？</h2>
-                    <p class="lead">ぼうけんする ユーザーを えらんでね。</p>
-
-                    <div class="starter-row" aria-label="パルデアのポケモン">
+                    <div class="starter-row compact" aria-label="パルデアのポケモン">
                         <figure class="starter-card">
                             <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/906.png" alt="ニャオハ" loading="lazy" onerror="this.closest('.starter-card').classList.add('image-error');" />
-                            <figcaption class="starter-name">ニャオハ</figcaption>
                         </figure>
                         <figure class="starter-card">
                             <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/909.png" alt="ホゲータ" loading="lazy" onerror="this.closest('.starter-card').classList.add('image-error');" />
-                            <figcaption class="starter-name">ホゲータ</figcaption>
                         </figure>
                         <figure class="starter-card">
                             <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/912.png" alt="クワッス" loading="lazy" onerror="this.closest('.starter-card').classList.add('image-error');" />
-                            <figcaption class="starter-name">クワッス</figcaption>
                         </figure>
                     </div>
+
+                    <h2 id="user-heading">だれで あそぶ？</h2>
+                    <p class="lead">ぼうけんする ユーザーを えらんでね。</p>
                 </div>
 
                 <div class="button-stack">
