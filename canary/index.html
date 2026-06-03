@@ -652,7 +652,7 @@
         function setupEvents() {
             startButton.addEventListener("click", function() {
                 if (!firebaseReady) {
-                    showError("Firebaseのじゅんじゅんびが まだできていません。".replace("じゅんじゅんび", "じゅんび"));
+                    showError("Firebaseのじゅんびが まだできていません。");
                     return;
                 }
                 showScreen("user");
