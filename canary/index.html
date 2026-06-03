@@ -39,7 +39,7 @@
     .app {
       width: min(100%, 480px);
       min-height: calc(100vh - 28px);
-      background: rgba(255, 255, 255, 0.9);
+      background: rgba(255, 255, 255, 0.92);
       border: 4px solid rgba(59, 76, 202, 0.18);
       border-radius: 28px;
       box-shadow: var(--shadow);
@@ -100,6 +100,7 @@
     }
 
     .screen.active { display: flex; }
+    .screen.menu-screen { justify-content: flex-start; gap: 14px; }
 
     .panel {
       background: var(--card);
@@ -161,7 +162,12 @@
 
     .starter-card.image-error { display: none; }
 
-    .button-stack { display: grid; gap: 12px; }
+    .button-stack,
+    .level-stack,
+    .sub-action-stack {
+      display: grid;
+      gap: 12px;
+    }
 
     button {
       appearance: none;
@@ -204,41 +210,81 @@
       box-shadow: 0 6px 0 var(--pokemon-blue-dark), 0 10px 18px rgba(37, 99, 235, 0.16);
     }
 
-    .profile-name {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      min-width: 150px;
-      padding: 10px 16px;
-      border-radius: 999px;
-      background: var(--pokemon-yellow-soft);
-      border: 2px solid var(--pokemon-yellow);
-      color: #4b3d00;
-      font-size: 1.35rem;
-      font-weight: 900;
-    }
-
-    .menu-grid { display: grid; gap: 12px; margin-top: 8px; }
-
-    .stat {
+    .menu-header {
+      text-align: center;
       display: grid;
-      gap: 6px;
-      padding: 14px;
-      border-radius: 18px;
-      background: linear-gradient(135deg, #eff6ff, #ffffff);
-      border: 1px solid #dbeafe;
+      gap: 10px;
+      margin-bottom: 2px;
     }
 
-    .stat-label { color: var(--muted); font-size: 0.86rem; font-weight: 800; }
-    .stat-value { color: var(--pokemon-blue-dark); font-size: 1.18rem; font-weight: 900; line-height: 1.35; }
-    .progress-summary { color: #334155; font-size: 1.08rem; font-weight: 900; line-height: 1.45; }
-    .remaining-summary { color: var(--muted); font-size: 0.98rem; font-weight: 900; line-height: 1.45; }
+    .menu-title {
+      margin: 0;
+      color: #111827;
+      font-size: clamp(1.18rem, 5vw, 1.42rem);
+      font-weight: 900;
+      line-height: 1.35;
+      letter-spacing: 0.03em;
+    }
+
+    .progress-strip {
+      width: 100%;
+      display: grid;
+      gap: 4px;
+      padding: 10px 12px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, #f8fbff, #ffffff);
+      border: 1px solid #cfe3ff;
+      box-shadow: 0 6px 18px rgba(37, 99, 235, 0.08);
+    }
+
+    .stat-value {
+      color: var(--pokemon-blue-dark);
+      font-size: 1.05rem;
+      font-weight: 900;
+      line-height: 1.35;
+    }
+
+    .progress-row {
+      display: flex;
+      justify-content: center;
+      align-items: baseline;
+      gap: 10px;
+      flex-wrap: wrap;
+      color: #334155;
+      font-size: 0.98rem;
+      font-weight: 900;
+      line-height: 1.4;
+    }
+
+    .remaining-summary {
+      color: var(--muted);
+    }
+
+    .level-stack { margin-top: 2px; }
+
+    .level-button {
+      min-height: 56px;
+      font-size: 1.05rem;
+      letter-spacing: 0.01em;
+    }
+
+    .sub-action-stack {
+      margin-top: 4px;
+      padding-top: 12px;
+      border-top: 2px solid #dbe4f0;
+    }
+
+    .zukan-button {
+      color: var(--pokemon-blue);
+      background: linear-gradient(135deg, var(--pokemon-yellow), #ffd84d);
+      box-shadow: 0 8px 0 #d5a700, 0 14px 22px rgba(245, 158, 11, 0.18);
+    }
 
     .progress-error {
       display: none;
-      margin-top: 10px;
-      border-radius: 16px;
-      padding: 12px;
+      margin-top: 8px;
+      border-radius: 14px;
+      padding: 10px;
       background: #fff1f2;
       border: 2px solid #fecdd3;
       color: #be123c;
@@ -288,6 +334,8 @@
       .starter-row { gap: 6px; }
       .starter-card { padding: 7px 4px; border-radius: 18px; }
       .starter-card img { max-width: 78px; }
+      .progress-row { gap: 6px; font-size: 0.92rem; }
+      .level-button { font-size: 0.98rem; }
     }
   </style>
 </head>
@@ -349,32 +397,33 @@
         </div>
       </section>
 
-      <section id="screen-menu" class="screen" aria-labelledby="menu-heading">
-        <div class="panel center">
-          <h2 id="menu-heading">メニュー</h2>
-          <div id="menu-display-name" class="profile-name">---</div>
-
-          <div class="menu-grid">
-            <div class="stat">
-              <div class="stat-label">いまの ぼうけん</div>
-              <div id="menu-generation" class="stat-value">---</div>
-              <div id="menu-progress-summary" class="progress-summary">---</div>
-              <div id="menu-remaining-summary" class="remaining-summary">---</div>
-
-              <div id="master-error-box" class="progress-error">
-                <div>ポケモンデータを よみこめませんでした</div>
-                <button id="retry-master-button" class="inline-button" type="button">もういちど よみこむ</button>
-              </div>
+      <section id="screen-menu" class="screen menu-screen" aria-labelledby="menu-heading">
+        <div class="menu-header">
+          <h2 id="menu-heading" class="menu-title">✨ <span id="menu-display-name">---</span> の メニュー ✨</h2>
+          <div class="progress-strip" aria-live="polite">
+            <div id="menu-generation" class="stat-value">---</div>
+            <div class="progress-row">
+              <span id="menu-progress-summary">---</span>
+              <span id="menu-remaining-summary" class="remaining-summary">---</span>
+            </div>
+            <div id="master-error-box" class="progress-error">
+              <div>ポケモンデータを よみこめませんでした</div>
+              <button id="retry-master-button" class="inline-button" type="button">もういちど よみこむ</button>
             </div>
           </div>
-
           <div id="placeholder-message" class="notice info" role="status">このきのうは これから つくります</div>
         </div>
 
-        <div class="button-stack">
-          <button id="start-math-button" class="secondary-button" type="button">さんすうを はじめる</button>
-          <button id="open-zukan-button" type="button">ずかんを みる</button>
-          <button id="change-user-button" class="ghost-button" type="button">ユーザーを えらびなおす</button>
+        <div class="level-stack" aria-label="さんすうの レベル">
+          <button class="level-button" type="button" data-level="1">レベル 1（1けたの たし・ひき）</button>
+          <button class="level-button" type="button" data-level="2">レベル 2（2けた と 1けた）</button>
+          <button class="level-button" type="button" data-level="3">レベル 3（2けたの たし・ひき）</button>
+          <button class="level-button" type="button" data-level="4">レベル 4（かけざん 九九）</button>
+        </div>
+
+        <div class="sub-action-stack">
+          <button id="open-zukan-button" class="zukan-button" type="button">📕 ずかんを みる</button>
+          <button id="change-user-button" class="ghost-button" type="button">👤 ユーザーを かえる</button>
         </div>
       </section>
 
@@ -469,7 +518,8 @@
       showScreen("error");
     }
 
-    function showPlaceholderMessage() {
+    function showPlaceholderMessage(message) {
+      placeholderMessage.textContent = message || "このきのうは これから つくります";
       placeholderMessage.classList.add("show");
       window.setTimeout(function() {
         placeholderMessage.classList.remove("show");
@@ -678,9 +728,13 @@
           loadUserData(button.dataset.userId);
         });
       });
+      document.querySelectorAll("[data-level]").forEach(function(button) {
+        button.addEventListener("click", function() {
+          showPlaceholderMessage("レベル " + button.dataset.level + " は これから つくります");
+        });
+      });
       document.getElementById("user-back-button").addEventListener("click", function() { showScreen("title"); });
-      document.getElementById("start-math-button").addEventListener("click", showPlaceholderMessage);
-      document.getElementById("open-zukan-button").addEventListener("click", showPlaceholderMessage);
+      document.getElementById("open-zukan-button").addEventListener("click", function() { showPlaceholderMessage("ずかんは これから つくります"); });
       document.getElementById("change-user-button").addEventListener("click", function() {
         selectedUserId = null;
         selectedUserLabel = "";
