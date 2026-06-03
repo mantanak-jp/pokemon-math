@@ -17,6 +17,8 @@
       --muted: #64748b;
       --border: #dbeafe;
       --shadow: 0 18px 45px rgba(37, 99, 235, 0.18);
+      --success: #22c55e;
+      --wrong: #ef4444;
     }
 
     * { box-sizing: border-box; }
@@ -104,7 +106,9 @@
     }
 
     .screen.active { display: flex; }
-    .screen.menu-screen { justify-content: flex-start; gap: 14px; }
+    .screen.menu-screen,
+    .screen.quiz-screen,
+    .screen.result-screen { justify-content: flex-start; gap: 14px; }
 
     .panel {
       background: var(--card);
@@ -257,6 +261,106 @@
       box-shadow: 0 8px 0 #d5a700, 0 14px 22px rgba(245, 158, 11, 0.18);
     }
 
+    .quiz-status {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      color: var(--pokemon-blue-dark);
+      font-size: 0.98rem;
+      font-weight: 900;
+    }
+
+    .quiz-generation {
+      color: var(--muted);
+      font-size: 0.9rem;
+      font-weight: 900;
+      text-align: center;
+    }
+
+    .quiz-progress-bar {
+      width: 100%;
+      height: 12px;
+      border-radius: 999px;
+      overflow: hidden;
+      background: #e2e8f0;
+      border: 1px solid #dbeafe;
+    }
+
+    .quiz-progress-fill {
+      width: 0%;
+      height: 100%;
+      background: linear-gradient(90deg, #22c55e, #84cc16);
+      transition: width 0.25s ease;
+    }
+
+    .question-text {
+      margin: 16px 0 10px;
+      padding: 18px 10px;
+      border-radius: 22px;
+      background: linear-gradient(180deg, #ffffff, #f8fbff);
+      border: 2px solid #dbeafe;
+      box-shadow: 0 10px 24px rgba(59, 76, 202, 0.10);
+      color: #111827;
+      font-size: clamp(2.3rem, 12vw, 3.5rem);
+      font-weight: 900;
+      line-height: 1.2;
+      text-align: center;
+    }
+
+    .answer-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .answer-button {
+      min-height: 70px;
+      font-size: clamp(1.7rem, 8vw, 2.35rem);
+    }
+
+    .answer-button.correct {
+      background: linear-gradient(135deg, var(--success), #16a34a);
+      box-shadow: 0 8px 0 #15803d, 0 14px 22px rgba(34, 197, 94, 0.20);
+    }
+
+    .answer-button.wrong {
+      background: linear-gradient(135deg, var(--wrong), #dc2626);
+      box-shadow: 0 8px 0 #991b1b, 0 14px 22px rgba(239, 68, 68, 0.20);
+    }
+
+    .quiz-alert {
+      min-height: 40px;
+      margin: 0;
+      color: var(--pokemon-blue-dark);
+      font-size: 1.35rem;
+      font-weight: 900;
+      text-align: center;
+      line-height: 1.4;
+    }
+
+    .quiz-alert.success { color: var(--success); }
+    .quiz-alert.wrong { color: var(--wrong); }
+
+    .result-score {
+      margin: 6px 0 2px;
+      color: var(--pokemon-blue-dark);
+      font-size: clamp(1.8rem, 8vw, 2.45rem);
+      font-weight: 900;
+      line-height: 1.35;
+      text-align: center;
+    }
+
+    .result-message {
+      margin: 0;
+      color: #334155;
+      font-size: 1.05rem;
+      font-weight: 800;
+      line-height: 1.75;
+      text-align: center;
+      white-space: pre-line;
+    }
+
     .notice {
       display: none;
       border-radius: 18px;
@@ -299,6 +403,8 @@
       .starter-card img { max-width: 78px; }
       .progress-strip { font-size: 0.95rem; }
       .level-button { font-size: 0.98rem; }
+      .answer-button { min-height: 64px; }
+      .quiz-alert { font-size: 1.2rem; }
     }
   </style>
 </head>
@@ -380,6 +486,35 @@
         </div>
       </section>
 
+      <section id="screen-quiz" class="screen quiz-screen" aria-labelledby="quiz-question">
+        <div class="quiz-generation" id="quiz-generation">---</div>
+        <div class="quiz-status">
+          <div id="quiz-count">だい 1 もん</div>
+          <div id="quiz-score">せいかい: 0</div>
+        </div>
+        <div class="quiz-progress-bar" aria-hidden="true"><div id="quiz-progress" class="quiz-progress-fill"></div></div>
+        <div id="quiz-question" class="question-text">? + ? = ?</div>
+        <div id="quiz-alert" class="quiz-alert" aria-live="polite"></div>
+        <div class="answer-grid" aria-label="こたえを えらぶ">
+          <button class="answer-button" type="button" data-choice-index="0">?</button>
+          <button class="answer-button" type="button" data-choice-index="1">?</button>
+          <button class="answer-button" type="button" data-choice-index="2">?</button>
+          <button class="answer-button" type="button" data-choice-index="3">?</button>
+        </div>
+      </section>
+
+      <section id="screen-result" class="screen result-screen" aria-labelledby="result-heading">
+        <div class="panel hero-panel center">
+          <h2 id="result-heading">あそびおわったよ！</h2>
+          <div id="result-score" class="result-score">5もん中 0もん せいかい！</div>
+          <p id="result-message" class="result-message">ポケモンゲットは これから つくります。</p>
+        </div>
+        <div class="button-stack">
+          <button id="result-retry-button" type="button">もういちど</button>
+          <button id="result-menu-button" class="ghost-button" type="button">メニューへ もどる</button>
+        </div>
+      </section>
+
       <section id="screen-error" class="screen" aria-live="assertive" aria-labelledby="error-heading">
         <div class="panel center">
           <h2 id="error-heading">データを よみこめませんでした</h2>
@@ -428,6 +563,9 @@
       "第9世代（パルデア）"
     ];
 
+    const QUIZ_QUESTION_COUNT = 5;
+    const QUIZ_NEXT_DELAY_MS = 1200;
+
     let db = null;
     let firebaseReady = false;
     let selectedUserId = null;
@@ -438,6 +576,12 @@
     let currentGenerationMasterPromise = null;
     let currentGenerationMasterError = null;
     let isLoadingUser = false;
+    let selectedLevel = 1;
+    let currentQuestionIndex = 0;
+    let correctCount = 0;
+    let currentCorrectAnswer = 0;
+    let isAnswered = false;
+    let quizTimerId = null;
 
     const appShell = document.getElementById("app-shell");
     const screens = {
@@ -445,6 +589,8 @@
       user: document.getElementById("screen-user"),
       loading: document.getElementById("screen-loading"),
       menu: document.getElementById("screen-menu"),
+      quiz: document.getElementById("screen-quiz"),
+      result: document.getElementById("screen-result"),
       error: document.getElementById("screen-error")
     };
 
@@ -454,6 +600,15 @@
     const menuDisplayName = document.getElementById("menu-display-name");
     const menuProgress = document.getElementById("menu-progress");
     const placeholderMessage = document.getElementById("placeholder-message");
+    const quizGeneration = document.getElementById("quiz-generation");
+    const quizCount = document.getElementById("quiz-count");
+    const quizScore = document.getElementById("quiz-score");
+    const quizProgress = document.getElementById("quiz-progress");
+    const quizQuestion = document.getElementById("quiz-question");
+    const quizAlert = document.getElementById("quiz-alert");
+    const answerButtons = Array.from(document.querySelectorAll(".answer-button"));
+    const resultScore = document.getElementById("result-score");
+    const resultMessage = document.getElementById("result-message");
     const errorMessage = document.getElementById("error-message");
     const retryButton = document.getElementById("retry-button");
 
@@ -640,6 +795,140 @@
       loadUserData(selectedUserId);
     }
 
+    function randomInt(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function shuffleArray(values) {
+      const shuffled = values.slice();
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        const tmp = shuffled[i];
+        shuffled[i] = shuffled[j];
+        shuffled[j] = tmp;
+      }
+      return shuffled;
+    }
+
+    function makeQuestionForLevel(level) {
+      let n1;
+      let n2;
+      let op = "+";
+      if (level === 1) {
+        n1 = randomInt(1, 9);
+        n2 = randomInt(1, 9);
+        if (Math.random() > 0.5 && n1 >= n2) op = "-";
+      } else if (level === 2) {
+        n1 = randomInt(10, 29);
+        n2 = randomInt(1, 9);
+        if (Math.random() > 0.5) op = "-";
+      } else if (level === 3) {
+        n1 = randomInt(20, 69);
+        n2 = randomInt(10, 49);
+        if (Math.random() > 0.5 && n1 >= n2) op = "-";
+      } else {
+        n1 = randomInt(1, 9);
+        n2 = randomInt(1, 9);
+        op = "×";
+      }
+      const answer = op === "+" ? n1 + n2 : (op === "-" ? n1 - n2 : n1 * n2);
+      return { text: n1 + " " + op + " " + n2 + " = ?", answer };
+    }
+
+    function makeChoices(correctAnswer) {
+      const choices = [correctAnswer];
+      while (choices.length < 4) {
+        const candidate = correctAnswer + randomInt(-4, 4);
+        if (candidate >= 0 && !choices.includes(candidate)) choices.push(candidate);
+      }
+      return shuffleArray(choices);
+    }
+
+    function resetAnswerButtons() {
+      answerButtons.forEach(function(button) {
+        button.classList.remove("correct", "wrong");
+        button.disabled = false;
+        button.textContent = "?";
+      });
+    }
+
+    function startQuiz(level) {
+      if (!currentUserData) {
+        showScreen("user");
+        return;
+      }
+      selectedLevel = level;
+      currentQuestionIndex = 0;
+      correctCount = 0;
+      isAnswered = false;
+      if (quizTimerId) window.clearTimeout(quizTimerId);
+      quizTimerId = null;
+      quizScore.textContent = "せいかい: 0";
+      quizAlert.textContent = "";
+      quizAlert.className = "quiz-alert";
+      quizGeneration.textContent = getGenerationText(currentUserData.cleared_generations);
+      prefetchCurrentGenerationMaster(currentUserData);
+      showScreen("quiz");
+      makeNextQuestion();
+    }
+
+    function makeNextQuestion() {
+      isAnswered = false;
+      resetAnswerButtons();
+      quizAlert.textContent = "";
+      quizAlert.className = "quiz-alert";
+      currentQuestionIndex += 1;
+      quizCount.textContent = "だい " + currentQuestionIndex + " もん";
+      quizScore.textContent = "せいかい: " + correctCount;
+      quizProgress.style.width = ((currentQuestionIndex - 1) / QUIZ_QUESTION_COUNT * 100) + "%";
+      const question = makeQuestionForLevel(selectedLevel);
+      currentCorrectAnswer = question.answer;
+      quizQuestion.textContent = question.text;
+      const choices = makeChoices(currentCorrectAnswer);
+      answerButtons.forEach(function(button, index) {
+        button.textContent = choices[index];
+      });
+    }
+
+    function answerQuestion(button) {
+      if (isAnswered) return;
+      isAnswered = true;
+      answerButtons.forEach(function(answerButton) {
+        answerButton.disabled = true;
+      });
+      const selectedAnswer = Number(button.textContent);
+      if (selectedAnswer === currentCorrectAnswer) {
+        correctCount += 1;
+        button.classList.add("correct");
+        quizAlert.textContent = "⭕ せいかい！";
+        quizAlert.className = "quiz-alert success";
+        quizScore.textContent = "せいかい: " + correctCount;
+      } else {
+        button.classList.add("wrong");
+        quizAlert.textContent = "❌ ざんねん！";
+        quizAlert.className = "quiz-alert wrong";
+      }
+      quizTimerId = window.setTimeout(function() {
+        quizTimerId = null;
+        if (currentQuestionIndex < QUIZ_QUESTION_COUNT) {
+          makeNextQuestion();
+        } else {
+          showResult();
+        }
+      }, QUIZ_NEXT_DELAY_MS);
+    }
+
+    function showResult() {
+      quizProgress.style.width = "100%";
+      resultScore.textContent = QUIZ_QUESTION_COUNT + "もん中 " + correctCount + "もん せいかい！";
+      if (correctCount >= 4) {
+        resultMessage.textContent = "つぎは ポケモンを ゲットするよ！\nゲットの しくみは これから つくります。";
+      } else {
+        resultMessage.textContent = "おしい！\nもういちど ちょうせん しよう！";
+      }
+      showScreen("result");
+    }
+
     function setupEvents() {
       startButton.addEventListener("click", function() {
         if (!firebaseReady) {
@@ -655,8 +944,12 @@
       });
       document.querySelectorAll("[data-level]").forEach(function(button) {
         button.addEventListener("click", function() {
-          if (currentUserData) prefetchCurrentGenerationMaster(currentUserData);
-          showPlaceholderMessage("レベル " + button.dataset.level + " は これから つくります");
+          startQuiz(Number(button.dataset.level));
+        });
+      });
+      answerButtons.forEach(function(button) {
+        button.addEventListener("click", function() {
+          answerQuestion(button);
         });
       });
       document.getElementById("user-back-button").addEventListener("click", function() { showScreen("title"); });
@@ -669,6 +962,8 @@
         resetCachedMaster();
         showScreen("user");
       });
+      document.getElementById("result-retry-button").addEventListener("click", function() { startQuiz(selectedLevel); });
+      document.getElementById("result-menu-button").addEventListener("click", function() { renderFastMenu(currentUserData); });
       retryButton.addEventListener("click", retryLoadUserData);
       document.getElementById("error-user-button").addEventListener("click", function() { showScreen("user"); });
     }
