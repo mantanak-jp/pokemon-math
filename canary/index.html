@@ -416,9 +416,36 @@
     .result-save-status.success { color: #15803d; }
     .result-save-status.error { color: #be123c; }
 
+    .hidden,
     .retry-reward-button.hidden,
     .reward-images.hidden {
-      display: none;
+      display: none !important;
+    }
+
+    .celebration-panel {
+      text-align: center;
+      background:
+        radial-gradient(circle at 20% 14%, rgba(255, 203, 5, 0.34), transparent 30%),
+        radial-gradient(circle at 82% 18%, rgba(34, 197, 94, 0.16), transparent 28%),
+        linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+    }
+
+    .celebration-title {
+      margin: 0 0 12px;
+      color: var(--pokemon-blue-dark);
+      font-size: clamp(1.75rem, 8vw, 2.35rem);
+      font-weight: 900;
+      line-height: 1.25;
+      white-space: pre-line;
+    }
+
+    .celebration-message {
+      margin: 0;
+      color: #334155;
+      font-size: 1.12rem;
+      font-weight: 900;
+      line-height: 1.8;
+      white-space: pre-line;
     }
 
     .zukan-header {
@@ -746,7 +773,7 @@
 <body>
   <div class="app" id="app-shell">
     <header class="app-header">
-      <div class="badge">V2 Canary 202606031930</div>
+      <div class="badge">V2 Canary 20260604-step6-7</div>
       <h1 class="title">ポケモンさんすう</h1>      <p class="subtitle">世代を すすめる あたらしい ぼうけん</p>
     </header>
 
@@ -847,8 +874,45 @@
           <button id="retry-reward-button" class="secondary-button retry-reward-button hidden" type="button">もういちどゲットする</button>
         </div>
         <div class="button-stack">
+          <button id="result-clear-button" class="hidden" type="button">クリアを みる！</button>
+          <button id="result-complete-button" class="hidden" type="button">コンプリートを みる！</button>
           <button id="result-retry-button" type="button">もういちど</button>
           <button id="result-menu-button" class="ghost-button" type="button">メニューへ もどる</button>
+        </div>
+      </section>
+
+      <section id="screen-generation-start" class="screen" aria-labelledby="generation-start-title">
+        <div class="panel celebration-panel">
+          <h2 id="generation-start-title" class="celebration-title">---</h2>
+          <p id="generation-start-message" class="celebration-message">---</p>
+        </div>
+        <div class="button-stack">
+          <button id="generation-start-button" type="button">このレベルで はじめる</button>
+          <button id="generation-start-menu-button" class="ghost-button" type="button">メニューへ もどる</button>
+        </div>
+      </section>
+
+      <section id="screen-generation-clear" class="screen" aria-labelledby="generation-clear-title">
+        <div class="panel celebration-panel">
+          <h2 id="generation-clear-title" class="celebration-title">---</h2>
+          <p id="generation-clear-message" class="celebration-message">---</p>
+        </div>
+        <div class="button-stack">
+          <button id="generation-clear-next-button" type="button">つぎの 世代へ</button>
+          <button id="generation-clear-menu-button" class="ghost-button" type="button">メニューへ もどる</button>
+        </div>
+      </section>
+
+      <section id="screen-all-complete" class="screen" aria-labelledby="all-complete-title">
+        <div class="panel celebration-panel">
+          <h2 id="all-complete-title" class="celebration-title">全世代コンプリート！</h2>
+          <p id="all-complete-message" class="celebration-message">すべての ポケモンを
+ゲットしたよ！</p>
+        </div>
+        <div class="button-stack">
+          <button id="all-complete-quiz-button" type="button">さんすうを つづける</button>
+          <button id="all-complete-zukan-button" class="zukan-button" type="button">ずかんを みる</button>
+          <button id="all-complete-menu-button" class="ghost-button" type="button">メニューへ もどる</button>
         </div>
       </section>
 
@@ -864,7 +928,6 @@
         </div>
 
         <div id="zukan-grid" class="zukan-grid" aria-label="ポケモンずかん"></div>
-
         <div class="button-stack zukan-actions">
           <button id="zukan-menu-button" class="ghost-button" type="button">メニューへ もどる</button>
         </div>
@@ -884,7 +947,7 @@
       </section>
     </main>
 
-    <div class="footer-note">Canary テストばん / データの よみこみだけを おこないます</div>
+    <div class="footer-note">Canary テストばん / users_v2 に ほぞんします</div>
   </div>
 
   <div id="pokemon-modal-backdrop" class="modal-backdrop" aria-hidden="true">
@@ -944,6 +1007,19 @@
       "第9世代（パルデア）"
     ];
 
+    const GENERATION_REGION_NAMES = [
+      "",
+      "カントー",
+      "ジョウト",
+      "ホウエン",
+      "シンオウ",
+      "イッシュ",
+      "カロス",
+      "アローラ",
+      "ガラル",
+      "パルデア"
+    ];
+
     const QUIZ_QUESTION_COUNT = 5;
     const QUIZ_NEXT_DELAY_MS = 1200;
 
@@ -966,6 +1042,9 @@
     let pendingRewardPokemon = [];
     let pendingRewardPokemonList = [];
     let isSavingReward = false;
+    let lastProgressResult = null;
+    let generationStartLevel = 1;
+    let generationStartTarget = null;
     let selectedZukanGeneration = null;
     const generationMasterCache = {};
     const generationMasterPromises = {};
@@ -978,6 +1057,9 @@
       menu: document.getElementById("screen-menu"),
       quiz: document.getElementById("screen-quiz"),
       result: document.getElementById("screen-result"),
+      generationStart: document.getElementById("screen-generation-start"),
+      generationClear: document.getElementById("screen-generation-clear"),
+      allComplete: document.getElementById("screen-all-complete"),
       zukan: document.getElementById("screen-zukan"),
       error: document.getElementById("screen-error")
     };
@@ -1000,8 +1082,17 @@
     const resultMessage = document.getElementById("result-message");
     const resultSaveStatus = document.getElementById("result-save-status");
     const retryRewardButton = document.getElementById("retry-reward-button");
+    const resultClearButton = document.getElementById("result-clear-button");
+    const resultCompleteButton = document.getElementById("result-complete-button");
     const resultRetryButton = document.getElementById("result-retry-button");
     const resultMenuButton = document.getElementById("result-menu-button");
+    const generationStartTitle = document.getElementById("generation-start-title");
+    const generationStartMessage = document.getElementById("generation-start-message");
+    const generationStartButton = document.getElementById("generation-start-button");
+    const generationClearTitle = document.getElementById("generation-clear-title");
+    const generationClearMessage = document.getElementById("generation-clear-message");
+    const generationClearNextButton = document.getElementById("generation-clear-next-button");
+    const allCompleteMessage = document.getElementById("all-complete-message");
     const zukanTabs = document.getElementById("zukan-tabs");
     const zukanGenerationName = document.getElementById("zukan-generation-name");
     const zukanGenerationCount = document.getElementById("zukan-generation-count");
@@ -1082,6 +1173,34 @@
       return "";
     }
 
+    function getRegionName(generation) {
+      return GENERATION_REGION_NAMES[generation] || "ポケモン";
+    }
+
+    function getGenerationLabel(generation) {
+      return "第" + generation + "世代";
+    }
+
+    function getGenerationStartStorageKey(userId, generation) {
+      return "v2_start_screen_shown_" + userId + "_gen_" + generation;
+    }
+
+    function hasShownGenerationStart(userId, generation) {
+      try {
+        return window.sessionStorage.getItem(getGenerationStartStorageKey(userId, generation)) === "1";
+      } catch (error) {
+        return false;
+      }
+    }
+
+    function markGenerationStartShown(userId, generation) {
+      try {
+        window.sessionStorage.setItem(getGenerationStartStorageKey(userId, generation), "1");
+      } catch (error) {
+        // sessionStorage が使えない場合も、プレイは止めません。
+      }
+    }
+
     function getGenerationText(clearedGenerations) {
       if (clearedGenerations === 9) return "全世代コンプリート！";
       const nextGeneration = clearedGenerations + 1;
@@ -1098,7 +1217,7 @@
       const ownedCount = new Set(userData.current_gen_owned).size;
       menuDisplayName.textContent = userData.displayName;
       if (userData.cleared_generations === 9) {
-        menuProgress.textContent = "全世代コンプリート！";
+        menuProgress.textContent = "全世代コンプリート！\nさんすうに ちょうせんできるよ！";
       } else {
         menuProgress.textContent = getGenerationText(userData.cleared_generations) + "  " + ownedCount + "ひき ゲットずみ！";
       }
@@ -1128,7 +1247,9 @@
           currentGenerationMasterPromise = null;
           return null;
         });
-    }    async function getCurrentGenerationMaster(userData) {
+    }
+
+    async function getCurrentGenerationMaster(userData) {
       if (currentGenerationPokemonList) return currentGenerationPokemonList;
       if (currentGenerationMasterPromise) {
         const prefetchedPokemonList = await currentGenerationMasterPromise;
@@ -1192,6 +1313,8 @@
       selectedZukanGeneration = null;
       pendingRewardPokemon = [];
       pendingRewardPokemonList = [];
+      lastProgressResult = null;
+      generationStartTarget = null;
       resetCachedMaster();
       setLoadingMessage("データを よみこんでいます。", selectedUserLabel + " のデータを よみこみ中");
       isLoadingUser = true;
@@ -1300,6 +1423,36 @@
       });
     }
 
+    function shouldShowGenerationStartForLevel() {
+      if (!currentUserData || currentUserData.cleared_generations === 9) return false;
+      if (new Set(currentUserData.current_gen_owned).size !== 0) return false;
+      const generation = currentUserData.cleared_generations + 1;
+      return !hasShownGenerationStart(selectedUserId, generation);
+    }
+
+    function startLevelFlow(level) {
+      if (!currentUserData) {
+        showScreen("user");
+        return;
+      }
+      selectedLevel = level;
+      if (shouldShowGenerationStartForLevel()) {
+        showGenerationStart(currentUserData.cleared_generations + 1, selectedLevel);
+        return;
+      }
+      startQuiz(selectedLevel);
+    }
+
+    function showGenerationStart(generation, level) {
+      generationStartLevel = level || selectedLevel || 1;
+      generationStartTarget = generation;
+      markGenerationStartShown(selectedUserId, generation);
+      generationStartTitle.textContent = getRegionName(generation) + "ちほうへ！";
+      generationStartMessage.textContent = getGenerationLabel(generation) + "の ポケモンを\nゲットしにいこう！";
+      generationStartButton.disabled = false;
+      showScreen("generationStart");
+    }
+
     function startQuiz(level) {
       if (!currentUserData) {
         showScreen("user");
@@ -1312,6 +1465,7 @@
       pendingRewardPokemon = [];
       pendingRewardPokemonList = [];
       isSavingReward = false;
+      lastProgressResult = null;
       if (quizTimerId) window.clearTimeout(quizTimerId);
       quizTimerId = null;
       quizScore.textContent = "せいかい: 0";
@@ -1472,11 +1626,20 @@
     function setResultActionDisabled(disabled) {
       resultRetryButton.disabled = disabled;
       resultMenuButton.disabled = disabled;
+      resultClearButton.disabled = disabled;
+      resultCompleteButton.disabled = disabled;
+    }
+
+    function resetResultProgressActions() {
+      resultClearButton.classList.add("hidden");
+      resultCompleteButton.classList.add("hidden");
+      resultRetryButton.classList.remove("hidden");
     }
 
     function renderRewardSaving() {
       isSavingReward = true;
       setResultActionDisabled(true);
+      resetResultProgressActions();
       retryRewardButton.classList.add("hidden");
       retryRewardButton.disabled = true;
       resultSaveStatus.className = "result-save-status";
@@ -1485,29 +1648,66 @@
       resultMessage.textContent = "ポケモンを ゲットしているよ...";
     }
 
-    function renderRewardSuccess(caughtPokemon, isGenerationComplete) {
+    function renderRewardSuccess(saveResult) {
+      const caughtPokemon = saveResult.caughtPokemon || [];
       isSavingReward = false;
+      lastProgressResult = saveResult;
       setResultActionDisabled(false);
       retryRewardButton.classList.add("hidden");
       retryRewardButton.disabled = true;
+      resetResultProgressActions();
 
       renderRewardImages(caughtPokemon);
 
       if (caughtPokemon.length > 0) {
         resultMessage.textContent = formatPokemonNames(caughtPokemon) + "を ゲット！";
+      } else if (saveResult.status === "already_all_completed") {
+        resultMessage.textContent = "もう ぜんぶ ゲットしているよ！\nさんすうは つづけられるよ！";
       } else {
         resultMessage.textContent = "このポケモンは ゲットずみです。";
       }
 
       resultSaveStatus.className = "result-save-status success";
-      resultSaveStatus.textContent = isGenerationComplete
-        ? "ほぞんできました！\nこの世代のポケモンを ぜんぶ ゲットしたよ！"
-        : "ほぞんできました！";
+      if (saveResult.isAllComplete) {
+        resultSaveStatus.textContent = "ほぞんできました！\nすべての ポケモンを ゲットしたよ！";
+        resultRetryButton.classList.add("hidden");
+        resultCompleteButton.classList.remove("hidden");
+      } else if (saveResult.isGenerationComplete) {
+        resultSaveStatus.textContent = "ほぞんできました！\nこの世代のポケモンを ぜんぶ ゲットしたよ！";
+        resultRetryButton.classList.add("hidden");
+        resultClearButton.classList.remove("hidden");
+      } else {
+        resultSaveStatus.textContent = "ほぞんできました！";
+      }
+    }
+
+    function renderAllCompleteQuizResult() {
+      isSavingReward = false;
+      lastProgressResult = {
+        status: "already_all_completed",
+        caughtPokemon: [],
+        isGenerationComplete: false,
+        isAllComplete: true,
+        clearedGeneration: null,
+        nextGeneration: null,
+        displayName: currentUserData ? currentUserData.displayName : "",
+        cleared_generations: 9,
+        current_gen_owned: []
+      };
+      renderRewardImages([]);
+      retryRewardButton.classList.add("hidden");
+      retryRewardButton.disabled = true;
+      resetResultProgressActions();
+      resultSaveStatus.className = "result-save-status success";
+      resultSaveStatus.textContent = "";
+      resultMessage.textContent = "もう ぜんぶ ゲットしているよ！\nさんすうは つづけられるよ！";
+      setResultActionDisabled(false);
     }
 
     function renderRewardFailure() {
       isSavingReward = false;
       setResultActionDisabled(false);
+      resetResultProgressActions();
       resultMessage.textContent = "ゲットできませんでした";
       resultSaveStatus.className = "result-save-status error";
       resultSaveStatus.textContent = "";
@@ -1521,6 +1721,7 @@
       retryRewardButton.disabled = true;
       resultSaveStatus.className = "result-save-status";
       resultSaveStatus.textContent = "";
+      resetResultProgressActions();
       resultMessage.textContent = getRewardPlaceholderMessage(score);
       setResultActionDisabled(false);
     }
@@ -1529,6 +1730,7 @@
       renderRewardImages([]);
       retryRewardButton.classList.add("hidden");
       retryRewardButton.disabled = true;
+      resetResultProgressActions();
       resultMessage.textContent = "この世代のポケモンは\nぜんぶ ゲットずみ！";
       resultSaveStatus.className = "result-save-status";
       resultSaveStatus.textContent = "";
@@ -1550,14 +1752,28 @@
     async function savePendingRewardOnce() {
       if (!selectedUserId || !currentUserData || pendingRewardPokemon.length === 0) {
         return {
+          status: "reward_saved",
           caughtPokemon: [],
-          isGenerationComplete: false
+          isGenerationComplete: false,
+          isAllComplete: false,
+          clearedGeneration: null,
+          nextGeneration: null,
+          displayName: currentUserData ? currentUserData.displayName : "",
+          cleared_generations: currentUserData ? currentUserData.cleared_generations : 0,
+          current_gen_owned: currentUserData ? currentUserData.current_gen_owned.slice() : []
         };
       }
 
       const rewardLocalIds = pendingRewardPokemon.map(function(pokemon) {
         return pokemon.local_id;
       });
+      const currentClearedGenerations = currentUserData.cleared_generations;
+      const currentDisplayName = currentUserData.displayName;
+      const pokemonList = pendingRewardPokemonList.slice();
+      const validLocalIds = new Set(pokemonList.map(function(pokemon) {
+        return pokemon.local_id;
+      }));
+      const currentGenerationNumber = currentClearedGenerations + 1;
 
       const userDocRef = db.collection("users_v2").doc(selectedUserId);
 
@@ -1573,12 +1789,72 @@
           throw new Error(validationError);
         }
 
+        const latestDisplayName = latestData.displayName.trim();
+
+        if (latestData.cleared_generations === 9) {
+          return {
+            status: "already_all_completed",
+            displayName: latestDisplayName,
+            cleared_generations: 9,
+            current_gen_owned: [],
+            addedLocalIds: [],
+            isGenerationComplete: false,
+            isAllComplete: true,
+            clearedGeneration: null,
+            nextGeneration: null
+          };
+        }
+
+        if (latestData.cleared_generations > currentClearedGenerations) {
+          return {
+            status: "already_advanced",
+            displayName: latestDisplayName,
+            cleared_generations: latestData.cleared_generations,
+            current_gen_owned: latestData.current_gen_owned.slice(),
+            addedLocalIds: [],
+            isGenerationComplete: false,
+            isAllComplete: latestData.cleared_generations === 9,
+            clearedGeneration: latestData.cleared_generations,
+            nextGeneration: latestData.cleared_generations < 9 ? latestData.cleared_generations + 1 : null
+          };
+        }
+
+        if (latestData.cleared_generations !== currentClearedGenerations) {
+          throw new Error("ユーザーデータの 世代が ただしくありません。もういちど よみこんでください。");
+        }
+
         const latestOwned = Array.from(new Set(latestData.current_gen_owned));
         const latestOwnedSet = new Set(latestOwned);
         const idsToAdd = rewardLocalIds.filter(function(localId) {
-          return !latestOwnedSet.has(localId);
+          return validLocalIds.has(localId) && !latestOwnedSet.has(localId);
         });
         const nextOwned = latestOwned.concat(idsToAdd);
+        const nextOwnedSet = new Set(nextOwned);
+        const validOwnedCount = Array.from(nextOwnedSet).filter(function(localId) {
+          return validLocalIds.has(localId);
+        }).length;
+        const isGenerationComplete = pokemonList.length > 0 && validOwnedCount >= pokemonList.length;
+
+        if (isGenerationComplete) {
+          const nextClearedGenerations = Math.min(currentGenerationNumber, 9);
+          transaction.update(userDocRef, {
+            cleared_generations: nextClearedGenerations,
+            current_gen_owned: [],
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+          });
+
+          return {
+            status: nextClearedGenerations === 9 ? "all_completed" : "generation_cleared",
+            displayName: latestDisplayName,
+            cleared_generations: nextClearedGenerations,
+            current_gen_owned: [],
+            addedLocalIds: idsToAdd,
+            isGenerationComplete: true,
+            isAllComplete: nextClearedGenerations === 9,
+            clearedGeneration: currentGenerationNumber,
+            nextGeneration: nextClearedGenerations < 9 ? nextClearedGenerations + 1 : null
+          };
+        }
 
         transaction.update(userDocRef, {
           current_gen_owned: nextOwned,
@@ -1586,29 +1862,45 @@
         });
 
         return {
-          displayName: latestData.displayName.trim(),
+          status: "reward_saved",
+          displayName: latestDisplayName,
           cleared_generations: latestData.cleared_generations,
           current_gen_owned: nextOwned,
-          addedLocalIds: idsToAdd
+          addedLocalIds: idsToAdd,
+          isGenerationComplete: false,
+          isAllComplete: false,
+          clearedGeneration: null,
+          nextGeneration: null
         };
       });
 
       currentUserData = {
-        displayName: transactionResult.displayName,
+        displayName: transactionResult.displayName || currentDisplayName,
         cleared_generations: transactionResult.cleared_generations,
         current_gen_owned: transactionResult.current_gen_owned.slice()
       };
+
+      if (transactionResult.isGenerationComplete || transactionResult.status === "already_advanced" || transactionResult.status === "already_all_completed") {
+        resetCachedMaster();
+        prefetchCurrentGenerationMaster(currentUserData);
+      }
 
       const actuallyCaughtPokemon = pendingRewardPokemon.filter(function(pokemon) {
         return transactionResult.addedLocalIds.includes(pokemon.local_id);
       });
 
       const shownPokemon = actuallyCaughtPokemon.length > 0 ? actuallyCaughtPokemon : pendingRewardPokemon;
-      const isGenerationComplete = calculateGenerationComplete(currentUserData, pendingRewardPokemonList);
 
       return {
+        status: transactionResult.status,
         caughtPokemon: shownPokemon,
-        isGenerationComplete: isGenerationComplete
+        isGenerationComplete: transactionResult.isGenerationComplete,
+        isAllComplete: transactionResult.isAllComplete,
+        clearedGeneration: transactionResult.clearedGeneration,
+        nextGeneration: transactionResult.nextGeneration,
+        displayName: currentUserData.displayName,
+        cleared_generations: currentUserData.cleared_generations,
+        current_gen_owned: currentUserData.current_gen_owned.slice()
       };
     }
 
@@ -1631,7 +1923,7 @@
 
       try {
         const saveResult = await savePendingRewardWithRetry();
-        renderRewardSuccess(saveResult.caughtPokemon, saveResult.isGenerationComplete);
+        renderRewardSuccess(saveResult);
       } catch (error) {
         renderRewardFailure();
       }
@@ -1645,11 +1937,16 @@
       resultSaveStatus.textContent = "";
       retryRewardButton.classList.add("hidden");
       retryRewardButton.disabled = true;
+      resetResultProgressActions();
       renderRewardImages([]);
       setResultActionDisabled(false);
       showScreen("result");
 
       const rewardCount = getRewardCount(correctCount);
+      if (currentUserData && currentUserData.cleared_generations === 9 && rewardCount > 0) {
+        renderAllCompleteQuizResult();
+        return;
+      }
       if (rewardCount <= 0) {
         renderNoRewardResult(correctCount);
         return;
@@ -1669,6 +1966,36 @@
       } catch (error) {
         renderRewardFailure();
       }
+    }
+
+    function showGenerationClear() {
+      if (!lastProgressResult || !lastProgressResult.clearedGeneration) {
+        renderFastMenu(currentUserData);
+        return;
+      }
+      const clearedGeneration = lastProgressResult.clearedGeneration;
+      generationClearTitle.textContent = getGenerationLabel(clearedGeneration) + " クリア！";
+      generationClearMessage.textContent = getRegionName(clearedGeneration) + "ちほうの ポケモンを\nぜんぶ ゲットしたよ！";
+      generationClearNextButton.textContent = lastProgressResult.isAllComplete ? "コンプリートを みる！" : "つぎの 世代へ";
+      showScreen("generationClear");
+    }
+
+    function showAllComplete() {
+      allCompleteMessage.textContent = "すべての ポケモンを\nゲットしたよ！";
+      showScreen("allComplete");
+    }
+
+    function continueAfterGenerationClear() {
+      if (!lastProgressResult) {
+        renderFastMenu(currentUserData);
+        return;
+      }
+      if (lastProgressResult.isAllComplete || currentUserData.cleared_generations === 9) {
+        showAllComplete();
+        return;
+      }
+      const nextGeneration = lastProgressResult.nextGeneration || (currentUserData.cleared_generations + 1);
+      showGenerationStart(nextGeneration, selectedLevel);
     }
 
     function getVisibleGenerations(userData) {
@@ -1920,7 +2247,7 @@
       });
       document.querySelectorAll("[data-level]").forEach(function(button) {
         button.addEventListener("click", function() {
-          startQuiz(Number(button.dataset.level));
+          startLevelFlow(Number(button.dataset.level));
         });
       });
       answerButtons.forEach(function(button) {
@@ -1944,6 +2271,8 @@
         selectedZukanGeneration = null;
         pendingRewardPokemon = [];
         pendingRewardPokemonList = [];
+        lastProgressResult = null;
+        generationStartTarget = null;
         resetCachedMaster();
         closePokemonModal();
         showScreen("user");
@@ -1954,6 +2283,31 @@
       });
       resultMenuButton.addEventListener("click", function() {
         if (isSavingReward) return;
+        renderFastMenu(currentUserData);
+      });
+      resultClearButton.addEventListener("click", function() {
+        if (isSavingReward) return;
+        showGenerationClear();
+      });
+      resultCompleteButton.addEventListener("click", function() {
+        if (isSavingReward) return;
+        showAllComplete();
+      });
+      generationStartButton.addEventListener("click", function() {
+        startQuiz(generationStartLevel || selectedLevel);
+      });
+      document.getElementById("generation-start-menu-button").addEventListener("click", function() {
+        renderFastMenu(currentUserData);
+      });
+      generationClearNextButton.addEventListener("click", continueAfterGenerationClear);
+      document.getElementById("generation-clear-menu-button").addEventListener("click", function() {
+        renderFastMenu(currentUserData);
+      });
+      document.getElementById("all-complete-quiz-button").addEventListener("click", function() {
+        startQuiz(selectedLevel);
+      });
+      document.getElementById("all-complete-zukan-button").addEventListener("click", openZukan);
+      document.getElementById("all-complete-menu-button").addEventListener("click", function() {
         renderFastMenu(currentUserData);
       });
       retryRewardButton.addEventListener("click", function() {
