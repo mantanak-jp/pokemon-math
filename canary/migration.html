@@ -233,7 +233,7 @@
       <div class="badge">Migration 20260604-step6-8</div>
       <h1>V1.5 → V2 移行ツール</h1>
       <p class="subtitle">ryoma / sara の V1.5 データを users_v2 形式へ移行します。
-guest は移行対象外です。
+guest は検証用に第3世代クリア直前データへ上書きできます。
 root index.html と canary/index.html は変更しません。</p>
     </header>
 
@@ -245,7 +245,13 @@ root index.html と canary/index.html は変更しません。</p>
           <button id="check-ryoma-button" type="button" data-user-id="ryoma" disabled>りょうまを確認</button>
           <button id="check-sara-button" type="button" data-user-id="sara" disabled>さらを確認</button>
         </div>
-        <p class="status warning show" style="margin-top: 12px;">ゲストは移行対象外です。既存の users_v2/guest ダミーデータを利用します。</p>
+        <p class="status warning show" style="margin-top: 12px;">りょうま / さら は V1.5 から移行します。ゲストは通常移行対象外ですが、世代クリア検証用に明示操作で上書きできます。</p>
+      </section>
+
+      <section class="panel">
+        <h2>検証用: ゲストデータを作成</h2>
+        <p class="status warning show">世代クリア検証のため、users_v2/guest を「第3世代クリア直前」に上書きするプレビューを作成します。保存前に必ず内容を確認してください。</p>
+        <button id="prepare-guest-near-clear-button" class="danger-button" type="button" disabled style="margin-top: 12px;">ゲストを第3世代クリア直前にする</button>
       </section>
 
       <section id="result-panel" class="panel hidden">
@@ -308,7 +314,7 @@ root index.html と canary/index.html は変更しません。</p>
       </section>
     </main>
 
-    <div class="footer-note">運用者向け Canary 移行ツール / 書き込み先は users_v2/ryoma と users_v2/sara のみです</div>
+    <div class="footer-note">運用者向け Canary 移行ツール / 書き込み先は users_v2/ryoma, users_v2/sara, 検証用 users_v2/guest です</div>
   </div>
 
   <script>
@@ -336,6 +342,7 @@ root index.html と canary/index.html は変更しません。</p>
 
     const firebaseStatus = document.getElementById("firebase-status");
     const checkButtons = Array.from(document.querySelectorAll("[data-user-id]"));
+    const prepareGuestNearClearButton = document.getElementById("prepare-guest-near-clear-button");
     const resultPanel = document.getElementById("result-panel");
     const warningPanel = document.getElementById("warning-panel");
     const warningMessage = document.getElementById("warning-message");
@@ -374,6 +381,7 @@ root index.html と canary/index.html は変更しません。</p>
       checkButtons.forEach(function(button) {
         button.disabled = !enabled;
       });
+      prepareGuestNearClearButton.disabled = !enabled;
     }
 
     function initFirebase() {
@@ -571,6 +579,72 @@ root index.html と canary/index.html は変更しません。</p>
       setStatus(operationStatus, "success", "読み取りと変換プレビューが完了しました。内容を確認してから保存してください。");
     }
 
+    function makeSequentialIds(start, end) {
+      const values = [];
+      for (let id = start; id <= end; id++) {
+        values.push(id);
+      }
+      return values;
+    }
+
+    async function prepareGuestNearClear() {
+      if (!firebaseReady || !db) {
+        setStatus(firebaseStatus, "error", "Firebaseの準備がまだできていません。");
+        return;
+      }
+
+      selectedUserId = "guest";
+      currentPreview = null;
+      saveButton.disabled = true;
+      resultPanel.classList.remove("hidden");
+      dataPanel.classList.add("hidden");
+      savePanel.classList.add("hidden");
+      warningPanel.classList.add("hidden");
+      setStatus(operationStatus, "info", "ゲストの第3世代クリア直前データを準備しています...");
+
+      try {
+        const existingV2Snap = await db.collection("users_v2").doc("guest").get();
+        const existingV2 = {
+          exists: existingV2Snap.exists,
+          data: existingV2Snap.exists ? existingV2Snap.data() : null
+        };
+        const ownedIds = makeSequentialIds(1, 134);
+        const converted = {
+          displayName: "ゲスト",
+          cleared_generations: 2,
+          current_gen_owned: ownedIds
+        };
+        const warningMessages = [
+          "検証用: users_v2/guest を第3世代クリア直前データに上書きします。",
+          "保存後、canary/index.html でゲストは第3世代 134 / 135 になります。",
+          "次に4問以上正解すると、第3世代クリア画面と第4世代開始画面の確認ができます。"
+        ];
+        if (existingV2.exists) {
+          warningMessages.push("既存の users_v2/guest データがあります。内容を確認し、問題なければ「上書きして移行する」を押してください。");
+        }
+
+        currentPreview = {
+          userId: "guest",
+          displayName: "ゲスト",
+          v1: {
+            exists: true,
+            docId: "not-used",
+            path: "検証用データ生成（V1.5は使用しません）",
+            data: { note: "guest は V1.5 移行対象外。第3世代クリア直前データを生成します。" },
+            checkedPaths: []
+          },
+          existingV2: existingV2,
+          ownedIds: ownedIds,
+          converted: converted,
+          warningMessages: warningMessages,
+          isGuestTestData: true
+        };
+        renderPreview(currentPreview);
+      } catch (error) {
+        setStatus(operationStatus, "error", "ゲスト検証データの準備に失敗しました: " + (error && error.message ? error.message : error));
+      }
+    }
+
     async function checkUser(userId) {
       if (!firebaseReady || !db) {
         setStatus(firebaseStatus, "error", "Firebaseの準備がまだできていません。");
@@ -632,7 +706,7 @@ root index.html と canary/index.html は変更しません。</p>
         setStatus(saveStatus, "error", "先にユーザーを確認してください。");
         return;
       }
-      if (selectedUserId !== "ryoma" && selectedUserId !== "sara") {
+      if (selectedUserId !== "ryoma" && selectedUserId !== "sara" && !(selectedUserId === "guest" && currentPreview.isGuestTestData === true)) {
         setStatus(saveStatus, "error", "移行対象外のユーザーです。");
         return;
       }
@@ -673,6 +747,7 @@ root index.html と canary/index.html は変更しません。</p>
         checkUser(button.dataset.userId);
       });
     });
+    prepareGuestNearClearButton.addEventListener("click", prepareGuestNearClear);
     saveButton.addEventListener("click", saveMigration);
 
     initFirebase();
