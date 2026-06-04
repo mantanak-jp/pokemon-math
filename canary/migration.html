@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>V1.5 → V2 移行ツール</title>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+  <style>
+    :root {
+      --pokemon-blue: #3b4cca;
+      --pokemon-blue-dark: #24368f;
+      --pokemon-yellow: #ffcb05;
+      --card: #ffffff;
+      --text: #233044;
+      --muted: #64748b;
+      --border: #dbeafe;
+      --danger: #dc2626;
+      --danger-dark: #991b1b;
+      --success: #15803d;
+      --shadow: 0 18px 45px rgba(37, 99, 235, 0.18);
+    }
+
+    * { box-sizing: border-box; }
+    html, body { min-height: 100%; margin: 0; }
+
+    body {
+      font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic", "Meiryo", system-ui, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 16% 10%, rgba(255, 203, 5, 0.50), transparent 26%),
+        radial-gradient(circle at 90% 8%, rgba(59, 76, 202, 0.18), transparent 28%),
+        linear-gradient(160deg, #e0f7ff 0%, #f8fbff 48%, #fff7d6 100%);
+      padding: 14px;
+    }
+
+    .app {
+      width: min(100%, 760px);
+      margin: 0 auto;
+      background: rgba(255, 255, 255, 0.94);
+      border: 4px solid rgba(59, 76, 202, 0.18);
+      border-radius: 28px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    header {
+      padding: 20px 18px 16px;
+      text-align: center;
+      background: linear-gradient(135deg, rgba(59, 76, 202, 0.12), rgba(255, 203, 5, 0.28));
+      border-bottom: 1px solid rgba(59, 76, 202, 0.12);
+    }
+
+    .badge {
+      display: inline-flex;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: var(--pokemon-yellow);
+      color: #3b2f00;
+      font-size: 0.82rem;
+      font-weight: 900;
+      box-shadow: 0 4px 12px rgba(245, 158, 11, 0.25);
+    }
+
+    h1 {
+      margin: 12px 0 8px;
+      color: var(--pokemon-blue);
+      font-size: clamp(1.85rem, 7vw, 2.7rem);
+      line-height: 1.12;
+      font-weight: 900;
+      text-shadow: 2px 2px 0 var(--pokemon-yellow), 0 5px 16px rgba(59, 76, 202, 0.16);
+    }
+
+    .subtitle {
+      margin: 0 auto;
+      max-width: 620px;
+      color: #334155;
+      font-size: 0.98rem;
+      font-weight: 800;
+      line-height: 1.75;
+      white-space: pre-line;
+    }
+
+    main {
+      display: grid;
+      gap: 14px;
+      padding: 18px;
+    }
+
+    .panel {
+      background: var(--card);
+      border: 2px solid var(--border);
+      border-radius: 22px;
+      padding: 16px;
+      box-shadow: 0 10px 28px rgba(59, 76, 202, 0.10);
+    }
+
+    .panel h2 {
+      margin: 0 0 10px;
+      color: var(--pokemon-blue-dark);
+      font-size: 1.22rem;
+      font-weight: 900;
+      line-height: 1.35;
+    }
+
+    .button-row {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    button {
+      appearance: none;
+      border: 0;
+      width: 100%;
+      min-height: 54px;
+      border-radius: 18px;
+      padding: 13px 15px;
+      font: inherit;
+      font-size: 1rem;
+      font-weight: 900;
+      cursor: pointer;
+      color: #ffffff;
+      background: linear-gradient(135deg, var(--pokemon-blue), #2563eb);
+      box-shadow: 0 8px 0 var(--pokemon-blue-dark), 0 14px 22px rgba(37, 99, 235, 0.20);
+      touch-action: manipulation;
+    }
+
+    button:active { transform: translateY(3px); box-shadow: 0 5px 0 var(--pokemon-blue-dark); }
+    button:disabled { cursor: not-allowed; opacity: 0.58; filter: grayscale(0.2); transform: none; }
+
+    .danger-button {
+      background: linear-gradient(135deg, var(--danger), #ef4444);
+      box-shadow: 0 8px 0 var(--danger-dark), 0 14px 22px rgba(220, 38, 38, 0.18);
+    }
+
+    .ghost-button {
+      color: var(--pokemon-blue-dark);
+      background: #eef5ff;
+      border: 2px solid #c7ddff;
+      box-shadow: none;
+    }
+
+    .status {
+      display: none;
+      margin: 0;
+      padding: 12px 14px;
+      border-radius: 16px;
+      font-weight: 900;
+      line-height: 1.65;
+      white-space: pre-line;
+    }
+
+    .status.show { display: block; }
+    .status.info { color: #1d4ed8; background: #eff6ff; border: 2px solid #bfdbfe; }
+    .status.success { color: var(--success); background: #f0fdf4; border: 2px solid #bbf7d0; }
+    .status.error { color: #be123c; background: #fff1f2; border: 2px solid #fecdd3; }
+    .status.warning { color: #92400e; background: #fffbeb; border: 2px solid #fde68a; }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .summary-card {
+      padding: 12px;
+      border-radius: 16px;
+      background: #f8fbff;
+      border: 1px solid #cfe3ff;
+      font-weight: 900;
+      line-height: 1.55;
+    }
+
+    .summary-label { color: var(--muted); font-size: 0.82rem; }
+    .summary-value { color: var(--pokemon-blue-dark); font-size: 1.02rem; }
+
+    .data-section {
+      display: grid;
+      gap: 12px;
+    }
+
+    .data-block {
+      display: grid;
+      gap: 8px;
+    }
+
+    .data-block h3 {
+      margin: 0;
+      color: #111827;
+      font-size: 1rem;
+      font-weight: 900;
+    }
+
+    pre {
+      margin: 0;
+      max-height: 260px;
+      overflow: auto;
+      padding: 12px;
+      border-radius: 14px;
+      border: 1px solid #dbeafe;
+      background: #0f172a;
+      color: #e2e8f0;
+      font-size: 0.82rem;
+      line-height: 1.55;
+      white-space: pre;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .hidden { display: none !important; }
+
+    .footer-note {
+      padding: 0 18px 18px;
+      color: var(--muted);
+      text-align: center;
+      font-size: 0.82rem;
+      line-height: 1.55;
+    }
+
+    @media (max-width: 560px) {
+      body { padding: 8px; }
+      .app { border-radius: 22px; }
+      main { padding: 14px; }
+      .button-row, .summary-grid { grid-template-columns: 1fr; }
+      pre { max-height: 220px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <div class="badge">Migration 20260604-step6-8</div>
+      <h1>V1.5 → V2 移行ツール</h1>
+      <p class="subtitle">ryoma / sara の V1.5 データを users_v2 形式へ移行します。
+guest は移行対象外です。
+root index.html と canary/index.html は変更しません。</p>
+    </header>
+
+    <main>
+      <section class="panel">
+        <h2>1. ユーザーを確認</h2>
+        <p class="status info show" id="firebase-status">Firebaseを 初期化しています...</p>
+        <div class="button-row" style="margin-top: 12px;">
+          <button id="check-ryoma-button" type="button" data-user-id="ryoma" disabled>りょうまを確認</button>
+          <button id="check-sara-button" type="button" data-user-id="sara" disabled>さらを確認</button>
+        </div>
+        <p class="status warning show" style="margin-top: 12px;">ゲストは移行対象外です。既存の users_v2/guest ダミーデータを利用します。</p>
+      </section>
+
+      <section id="result-panel" class="panel hidden">
+        <h2>2. 読み取り結果と変換プレビュー</h2>
+        <p id="operation-status" class="status info"></p>
+        <div class="summary-grid">
+          <div class="summary-card">
+            <div class="summary-label">選択ユーザー</div>
+            <div id="selected-user-summary" class="summary-value">---</div>
+          </div>
+          <div class="summary-card">
+            <div class="summary-label">V1.5 取得済み数</div>
+            <div id="owned-count-summary" class="summary-value">---</div>
+          </div>
+          <div class="summary-card">
+            <div class="summary-label">移行元</div>
+            <div id="source-path-summary" class="summary-value">---</div>
+          </div>
+          <div class="summary-card">
+            <div class="summary-label">移行先</div>
+            <div id="target-path-summary" class="summary-value">---</div>
+          </div>
+        </div>
+      </section>
+
+      <section id="warning-panel" class="panel hidden">
+        <h2>注意</h2>
+        <p id="warning-message" class="status warning show"></p>
+      </section>
+
+      <section id="data-panel" class="panel data-section hidden">
+        <div class="data-block">
+          <h3>users/{userId} の存在有無</h3>
+          <pre id="v1-exists-output">---</pre>
+        </div>
+        <div class="data-block">
+          <h3>V1.5 元データ JSON</h3>
+          <pre id="v1-json-output">---</pre>
+        </div>
+        <div class="data-block">
+          <h3>抽出した取得済みID配列</h3>
+          <pre id="owned-ids-output">---</pre>
+        </div>
+        <div class="data-block">
+          <h3>users_v2/{userId} に保存予定のJSON</h3>
+          <pre id="converted-json-output">---</pre>
+        </div>
+        <div class="data-block">
+          <h3>既存 users_v2/{userId} データ</h3>
+          <pre id="existing-v2-output">---</pre>
+        </div>
+      </section>
+
+      <section id="save-panel" class="panel hidden">
+        <h2>3. 明示操作で保存</h2>
+        <p id="overwrite-warning" class="status warning hidden">既存の users_v2 データがあります。
+内容を確認し、問題なければ「上書きして移行する」を押してください。</p>
+        <button id="save-button" type="button" disabled>この内容で移行する</button>
+        <p id="save-status" class="status" style="margin-top: 12px;"></p>
+      </section>
+    </main>
+
+    <div class="footer-note">運用者向け Canary 移行ツール / 書き込み先は users_v2/ryoma と users_v2/sara のみです</div>
+  </div>
+
+  <script>
+    "use strict";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDeFo0Xwsr4QgwCHVKrc5kIT03Rvfe7xQw",
+      authDomain: "pokemon-math-app.firebaseapp.com",
+      projectId: "pokemon-math-app",
+      storageBucket: "pokemon-math-app.firebasestorage.app",
+      messagingSenderId: "1002462273438",
+      appId: "1:1002462273438:web:646cd240932dfaf6cd808f"
+    };
+
+    const MIGRATION_USERS = {
+      ryoma: { displayName: "りょうま", legacyV1DocId: "りょうま" },
+      sara: { displayName: "さら", legacyV1DocId: "さら" }
+    };
+
+    let db = null;
+    let firebaseReady = false;
+    let selectedUserId = null;
+    let currentPreview = null;
+    let isSaving = false;
+
+    const firebaseStatus = document.getElementById("firebase-status");
+    const checkButtons = Array.from(document.querySelectorAll("[data-user-id]"));
+    const resultPanel = document.getElementById("result-panel");
+    const warningPanel = document.getElementById("warning-panel");
+    const warningMessage = document.getElementById("warning-message");
+    const dataPanel = document.getElementById("data-panel");
+    const savePanel = document.getElementById("save-panel");
+    const operationStatus = document.getElementById("operation-status");
+    const selectedUserSummary = document.getElementById("selected-user-summary");
+    const ownedCountSummary = document.getElementById("owned-count-summary");
+    const sourcePathSummary = document.getElementById("source-path-summary");
+    const targetPathSummary = document.getElementById("target-path-summary");
+    const v1ExistsOutput = document.getElementById("v1-exists-output");
+    const v1JsonOutput = document.getElementById("v1-json-output");
+    const ownedIdsOutput = document.getElementById("owned-ids-output");
+    const convertedJsonOutput = document.getElementById("converted-json-output");
+    const existingV2Output = document.getElementById("existing-v2-output");
+    const overwriteWarning = document.getElementById("overwrite-warning");
+    const saveButton = document.getElementById("save-button");
+    const saveStatus = document.getElementById("save-status");
+
+    function setStatus(element, type, message) {
+      element.className = "status " + type + " show";
+      element.textContent = message;
+    }
+
+    function hideStatus(element) {
+      element.className = "status";
+      element.textContent = "";
+    }
+
+    function prettyJson(value) {
+      if (value === null || typeof value === "undefined") return "null";
+      return JSON.stringify(value, null, 2);
+    }
+
+    function enableCheckButtons(enabled) {
+      checkButtons.forEach(function(button) {
+        button.disabled = !enabled;
+      });
+    }
+
+    function initFirebase() {
+      try {
+        if (typeof firebase === "undefined") {
+          throw new Error("Firebase SDK を読み込めませんでした。");
+        }
+        if (!firebase.apps.length) {
+          firebase.initializeApp(firebaseConfig);
+        }
+        db = firebase.firestore();
+        firebaseReady = true;
+        enableCheckButtons(true);
+        setStatus(firebaseStatus, "success", "Firebaseの準備ができました。対象ユーザーを確認してください。");
+      } catch (error) {
+        firebaseReady = false;
+        enableCheckButtons(false);
+        setStatus(firebaseStatus, "error", "Firebaseの初期化に失敗しました: " + (error && error.message ? error.message : error));
+      }
+    }
+
+    function normalizeOwnedIds(ids) {
+      return Array.from(new Set(ids
+        .map(Number)
+        .filter(function(value) {
+          return Number.isInteger(value) && value >= 1 && value <= 151;
+        })
+      )).sort(function(a, b) {
+        return a - b;
+      });
+    }
+
+    function collectIdsFromValue(value, output) {
+      if (Array.isArray(value)) {
+        value.forEach(function(item) {
+          collectIdsFromValue(item, output);
+        });
+        return;
+      }
+
+      if (typeof value === "number" || typeof value === "string") {
+        output.push(value);
+        return;
+      }
+
+      if (!value || typeof value !== "object") return;
+
+      ["id", "api_id", "apiId", "local_id", "localId", "pokemonId", "pokemon_id", "no"].forEach(function(key) {
+        if (Object.prototype.hasOwnProperty.call(value, key)) {
+          output.push(value[key]);
+        }
+      });
+
+      Object.keys(value).forEach(function(key) {
+        const child = value[key];
+        const numericKey = Number(key);
+        if (Number.isInteger(numericKey) && numericKey >= 1 && numericKey <= 151) {
+          if (child === true || child === 1 || child === "1" || child === "true") {
+            output.push(numericKey);
+          } else if (child && typeof child === "object" && (child.caught === true || child.owned === true || child.collected === true)) {
+            output.push(numericKey);
+          }
+        }
+      });
+    }
+
+    function extractOwnedIdsFromV1(data) {
+      if (!data || typeof data !== "object") return [];
+      const rawIds = [];
+      const candidateFields = [
+        "owned",
+        "ownedIds",
+        "caughtIds",
+        "api_id",
+        "apiIds",
+        "pokemonId",
+        "pokemonIds",
+        "collectedPokemon",
+        "caughtPokemon",
+        "ownedPokemon",
+        "pokemon",
+        "collection"
+      ];
+
+      candidateFields.forEach(function(fieldName) {
+        if (Object.prototype.hasOwnProperty.call(data, fieldName)) {
+          collectIdsFromValue(data[fieldName], rawIds);
+        }
+      });
+
+      if (rawIds.length === 0 && Array.isArray(data)) {
+        collectIdsFromValue(data, rawIds);
+      }
+
+      return normalizeOwnedIds(rawIds);
+    }
+
+    function convertToV2(userId, ownedIds) {
+      if (userId === "ryoma") {
+        return {
+          displayName: "りょうま",
+          cleared_generations: 1,
+          current_gen_owned: []
+        };
+      }
+
+      if (userId === "sara") {
+        return {
+          displayName: "さら",
+          cleared_generations: 0,
+          current_gen_owned: ownedIds.slice()
+        };
+      }
+
+      throw new Error("移行対象外のユーザーです。");
+    }
+
+    async function readFirstExistingV1Doc(userId) {
+      const userConfig = MIGRATION_USERS[userId];
+      const candidates = [];
+
+      if (userConfig.legacyV1DocId) {
+        candidates.push(userConfig.legacyV1DocId);
+      }
+      if (!candidates.includes(userId)) {
+        candidates.push(userId);
+      }
+
+      for (const docId of candidates) {
+        const docSnap = await db.collection("users").doc(docId).get();
+        if (docSnap.exists) {
+          return {
+            exists: true,
+            docId: docId,
+            path: "users/" + docId,
+            data: docSnap.data(),
+            checkedPaths: candidates.map(function(candidate) { return "users/" + candidate; })
+          };
+        }
+      }
+
+      return {
+        exists: false,
+        docId: userConfig.legacyV1DocId || userId,
+        path: "users/" + (userConfig.legacyV1DocId || userId),
+        data: null,
+        checkedPaths: candidates.map(function(candidate) { return "users/" + candidate; })
+      };
+    }
+
+    function renderPreview(preview) {
+      resultPanel.classList.remove("hidden");
+      dataPanel.classList.remove("hidden");
+      savePanel.classList.remove("hidden");
+
+      selectedUserSummary.textContent = preview.userId + " / " + preview.displayName;
+      ownedCountSummary.textContent = preview.ownedIds.length + " ひき";
+      sourcePathSummary.textContent = preview.v1.path;
+      targetPathSummary.textContent = "users_v2/" + preview.userId;
+
+      v1ExistsOutput.textContent = prettyJson({ exists: preview.v1.exists, path: preview.v1.path, checkedPaths: preview.v1.checkedPaths || [] });
+      v1JsonOutput.textContent = prettyJson(preview.v1.data);
+      ownedIdsOutput.textContent = prettyJson(preview.ownedIds);
+      convertedJsonOutput.textContent = prettyJson(preview.converted);
+      existingV2Output.textContent = preview.existingV2.exists
+        ? prettyJson(preview.existingV2.data)
+        : "users_v2/" + preview.userId + " はまだありません。";
+
+      if (preview.warningMessages.length > 0) {
+        warningPanel.classList.remove("hidden");
+        warningMessage.textContent = preview.warningMessages.join("\n");
+      } else {
+        warningPanel.classList.add("hidden");
+        warningMessage.textContent = "";
+      }
+
+      if (preview.existingV2.exists) {
+        overwriteWarning.classList.remove("hidden");
+        saveButton.textContent = "上書きして移行する";
+        saveButton.classList.add("danger-button");
+      } else {
+        overwriteWarning.classList.add("hidden");
+        saveButton.textContent = "この内容で移行する";
+        saveButton.classList.remove("danger-button");
+      }
+
+      hideStatus(saveStatus);
+      if (!preview.v1.exists) {
+        saveButton.disabled = true;
+        setStatus(operationStatus, "error", "移行元データが存在しないため、保存できません。Firestore の users/りょうま または users/さら を確認してください。");
+        return;
+      }
+
+      saveButton.disabled = false;
+      setStatus(operationStatus, "success", "読み取りと変換プレビューが完了しました。内容を確認してから保存してください。");
+    }
+
+    async function checkUser(userId) {
+      if (!firebaseReady || !db) {
+        setStatus(firebaseStatus, "error", "Firebaseの準備がまだできていません。");
+        return;
+      }
+      if (userId !== "ryoma" && userId !== "sara") {
+        setStatus(firebaseStatus, "error", "移行対象外のユーザーです。");
+        return;
+      }
+
+      selectedUserId = userId;
+      currentPreview = null;
+      saveButton.disabled = true;
+      resultPanel.classList.remove("hidden");
+      dataPanel.classList.add("hidden");
+      savePanel.classList.add("hidden");
+      warningPanel.classList.add("hidden");
+      setStatus(operationStatus, "info", MIGRATION_USERS[userId].displayName + " のデータを読み取っています...");
+
+      try {
+        const v1 = await readFirstExistingV1Doc(userId);
+        const existingV2Snap = await db.collection("users_v2").doc(userId).get();
+        const existingV2 = {
+          exists: existingV2Snap.exists,
+          data: existingV2Snap.exists ? existingV2Snap.data() : null
+        };
+        const ownedIds = extractOwnedIdsFromV1(v1.data);
+        const converted = convertToV2(userId, ownedIds);
+        const warningMessages = [];
+
+        if (!v1.exists) {
+          warningMessages.push("注意: " + v1.path + " が存在しません。取得済みIDは空としてプレビューします。");
+        }
+        if (userId === "ryoma" && ownedIds.length < 151) {
+          warningMessages.push("注意: V1.5データ上の取得済み数は151匹未満ですが、今回の仕様では ryoma は第1世代クリア済みとして移行します。");
+        }
+        if (existingV2.exists) {
+          warningMessages.push("既存の users_v2 データがあります。内容を確認し、問題なければ「上書きして移行する」を押してください。");
+        }
+
+        currentPreview = {
+          userId: userId,
+          displayName: MIGRATION_USERS[userId].displayName,
+          v1: v1,
+          existingV2: existingV2,
+          ownedIds: ownedIds,
+          converted: converted,
+          warningMessages: warningMessages
+        };
+        renderPreview(currentPreview);
+      } catch (error) {
+        setStatus(operationStatus, "error", "読み取りまたは変換に失敗しました: " + (error && error.message ? error.message : error));
+      }
+    }
+
+    async function saveMigration() {
+      if (isSaving) return;
+      if (!currentPreview || !selectedUserId) {
+        setStatus(saveStatus, "error", "先にユーザーを確認してください。");
+        return;
+      }
+      if (selectedUserId !== "ryoma" && selectedUserId !== "sara") {
+        setStatus(saveStatus, "error", "移行対象外のユーザーです。");
+        return;
+      }
+
+      const converted = currentPreview.converted;
+      const saveData = {
+        displayName: converted.displayName,
+        cleared_generations: converted.cleared_generations,
+        current_gen_owned: converted.current_gen_owned.slice()
+      };
+
+      isSaving = true;
+      saveButton.disabled = true;
+      setStatus(saveStatus, "info", "users_v2/" + selectedUserId + " に保存しています...");
+
+      try {
+        await db.collection("users_v2").doc(selectedUserId).set(saveData);
+        const savedSnap = await db.collection("users_v2").doc(selectedUserId).get();
+        currentPreview.existingV2 = {
+          exists: savedSnap.exists,
+          data: savedSnap.exists ? savedSnap.data() : null
+        };
+        existingV2Output.textContent = prettyJson(currentPreview.existingV2.data);
+        overwriteWarning.classList.remove("hidden");
+        saveButton.textContent = "上書きして移行する";
+        saveButton.classList.add("danger-button");
+        setStatus(saveStatus, "success", "移行が完了しました。users_v2/" + selectedUserId + " を再読み取りして表示しました。");
+      } catch (error) {
+        setStatus(saveStatus, "error", "移行に失敗しました: " + (error && error.message ? error.message : error));
+      } finally {
+        isSaving = false;
+        saveButton.disabled = false;
+      }
+    }
+
+    checkButtons.forEach(function(button) {
+      button.addEventListener("click", function() {
+        checkUser(button.dataset.userId);
+      });
+    });
+    saveButton.addEventListener("click", saveMigration);
+
+    initFirebase();
+  </script>
+</body>
+</html>
