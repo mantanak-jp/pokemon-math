@@ -4,9 +4,16 @@
 
 ## 現在の位置づけ
 
-- `index.html` は V1.5 本番版です。明示的な Issue と承認がない限り変更しません。
-- `canary/` 配下の既存HTMLファイルは、V2検討用の参考・プロトタイプ・作業履歴として扱います。
-- V2本実装・開発用HTMLは、既存の `canary/*.html` を正本化せず、新規ファイルとして `canary/index.html` 作成します。
+- `index.html` は **V2 Main 本番版**です。
+- V1.5 本番版は `archive/index_v1_5.html` に退避済みです。
+- `canary/index.html` は、V2 Canary 開発・検証の履歴、および今後の検証用ファイルとして残します。
+- `canary/migration.html` は、V1.5 から V2 への移行に使用した運用者向けツールです。通常ユーザー・子ども向け導線には出しません。
+
+## データの位置づけ
+
+- V2 Main は Firestore `users_v2` をユーザーデータの正本として使用します。
+- V2 Main は Firestore `masters/gen_{1..9}` をポケモンマスターデータとして読み取ります。
+- V1.5 の `users` コレクションは、V1.5 退避版および移行元データの参照対象です。V2 Main から通常プレイ中に書き込みません。
 
 ## 開発ルール
 
@@ -14,23 +21,12 @@
 
 特に以下を重視します。
 
-- ルート `index.html` を保護すること
-- Firestore `users` へのV2書き込みを避けること
-- V2では `users_v2` と `masters/gen_{1..9}` を使用すること
-- 仕様変更時は `docs/` 配下のドキュメントも更新すること
+- `index.html` は V2 Main 本番版として慎重に変更すること
+- 仕様変更時は `docs/` 配下の関連ドキュメントも更新すること
+- V2 Main では `users_v2` と `masters/gen_{1..9}` を使用すること
+- 通常ユーザー導線に `canary/migration.html` へのリンクを置かないこと
+- V1.5 参照が必要な場合は `archive/index_v1_5.html` と `docs/system_definition_v1.5.md` を参照すること
 
 ## ドキュメント
 
-仕様書・棚卸し・今後の設計文書は [`docs/README.md`](./docs/README.md) を入口に参照してください。
-
-主なドキュメント:
-
-- [`docs/system_definition_v1.5.md`](./docs/system_definition_v1.5.md): V1.5 本番版の仕様定義書
-- [`docs/system_definition_v2.md`](./docs/system_definition_v2.md): V2 の構想・要求仕様・データ構造・ロードマップ
-- [`docs/current_inventory.md`](./docs/current_inventory.md): 現在のファイル構成、既存HTMLの位置づけ、V1/V2/Firestore の関係整理
-
-## 開発時の基本方針
-
-1 Issue = 1 Pull Request を原則とし、変更範囲を小さく保ちます。
-
-コードやFirestoreの読み書き先を変更する場合は、事前に関連ドキュメントを確認し、必要に応じて同じPRで更新してください。
+仕様書・棚卸し・運用ルールは [`docs/README.md`](./docs/README.md) を入口に参照してください。
