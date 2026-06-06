@@ -10,8 +10,12 @@
 | `ui_ux_v2.md` | V2 Main の UI/UX、画面遷移、文言、図鑑・モーダル仕様を定義します。 |
 | `data_model_v1_v2.md` | V1.5 / V2 / マスターデータの Firestore データモデルを定義します。 |
 | `migration_v1_to_v2.md` | V1.5 から V2 への移行仕様、および ryoma / sara の移行実施記録を整理します。 |
-| `release_and_canary.md` | V2 Main 昇格後の Main / Canary / archive 運用方針を定義します。 |
+| `release_and_canary.md` | V2 Main 昇格後の Main / Canary / archive / V3検証運用方針を定義します。 |
 | `current_inventory.md` | 現在のリポジトリ構成、主要HTML、Firestore、ドキュメントの位置づけを棚卸しします。 |
+| `development_workflow.md` | iPhone / ChatGPT / Codex Web / GitHub を使った開発ワークフローを定義します。 |
+| `refactoring_plan.md` | `index.html` 分割・リファクタリングの基本方針を定義します。 |
+| `v3_refactoring_plan.md` | V3シングルHTML分割プロジェクトの専用計画です。`v3/` ディレクトリ方式、相対パス、検証・昇格方針を定義します。 |
+| `review_checklist.md` | PR作成前・レビュー時・マージ前後のチェックリストです。 |
 | `v2_canary_handoff.md` | V2 Canary 開発から Main 昇格完了までの引き継ぎ・完了メモです。 |
 | `system_definition_v1.5.md` | V1.5 退避版の仕様定義書です。`archive/index_v1_5.html` の参照用として維持します。 |
 
@@ -20,6 +24,7 @@
 | パス | 位置づけ |
 | --- | --- |
 | `index.html` | V2 Main 本番版です。 |
+| `v3/` | V3シングルHTML分割プロジェクト用に新設予定の検証領域です。GitHub Pagesでは `/pokemon-math/v3/` で確認する想定です。 |
 | `archive/index_v1_5.html` | V1.5 本番版の退避ファイルです。 |
 | `canary/index.html` | V2 Canary 開発・検証の履歴、および今後の検証用ファイルです。 |
 | `canary/migration.html` | V1.5→V2 移行に使用した運用者向けツールです。通常導線には出しません。 |
@@ -31,6 +36,7 @@
 | 項目 | 正本 |
 | --- | --- |
 | V2 Main アプリ | `index.html` |
+| V3検証計画 | `docs/v3_refactoring_plan.md` |
 | V2 ユーザーデータ | Firestore `users_v2/{userId}` |
 | V2 ポケモンマスター | Firestore `masters/gen_{1..9}` |
 | V1.5 退避版 | `archive/index_v1_5.html` |
@@ -46,6 +52,6 @@
 - Firestore の読み書き先を変更する場合
 - V1.5 / V2 のデータ構造を変更する場合
 - 画面遷移、主要UI、子ども向け文言を変更する場合
-- `index.html`、`canary/`、`archive/` 配下のファイルの役割を変更する場合
+- `index.html`、`v3/`、`canary/`、`archive/` 配下のファイルの役割を変更する場合
 - V1.5 から V2 への移行仕様を変更する場合
-- Main / Canary のリリース運用を変更する場合
+- Main / Canary / V3 のリリース運用を変更する場合
