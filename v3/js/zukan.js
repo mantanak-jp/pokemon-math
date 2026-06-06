@@ -1,7 +1,6 @@
 (function() {
   "use strict";
 
-  const config = window.AppConfig;
   const constants = window.AppConstants;
   const state = window.AppState;
   const dom = window.AppDom;
