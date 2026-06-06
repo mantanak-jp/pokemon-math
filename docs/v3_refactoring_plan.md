@@ -13,7 +13,8 @@ V3の目的:
 - root index.html を直接壊さずに分割検証する
 - GitHub Pages上で iPhone 実機確認できるようにする
 - CSS / JavaScript を相対パスで外部ファイル化する
-- 最終的にB案の責務分割へ進む
+- B案の責務分割へ進む
+- Phase 2でES Modules化へ進める状態を作る
 - 将来のクイズ拡張・報酬拡張に備える
 ```
 
@@ -71,14 +72,15 @@ Phase 1Aの読み込み例:
 Phase 1Bの読み込み例:
 
 ```html
-<script src="./js/constants.js" defer></script>
 <script src="./js/config.js" defer></script>
+<script src="./js/constants.js" defer></script>
 <script src="./js/state.js" defer></script>
+<script src="./js/dom.js" defer></script>
+<script src="./js/ui.js" defer></script>
 <script src="./js/firestore.js" defer></script>
 <script src="./js/quiz.js" defer></script>
 <script src="./js/reward.js" defer></script>
 <script src="./js/zukan.js" defer></script>
-<script src="./js/ui.js" defer></script>
 <script src="./js/app.js" defer></script>
 ```
 
@@ -159,13 +161,32 @@ v3/
 - archive/ の変更
 ```
 
+### 7.4 完了状況
+
+Phase 1Aは完了済みです。
+
+```text
+- v3/index.html 追加済み
+- v3/css/app.css 追加済み
+- v3/js/app.js 追加済み
+- /pokemon-math/v3/ で実機確認済み
+```
+
 ## 8. V3 Phase 1B: B案の責務分割
 
 ### 8.1 目的
 
 V3 Phase 1Aで作成した `v3/js/app.js` を、B案の責務単位に分割します。
 
-目標構成:
+Phase 1Bでは、通常script方式を維持し、`window.AppXXX` 名前空間方式を採用します。
+
+詳細設計は以下を正本とします。
+
+```text
+docs/v3_phase_1b_design.md
+```
+
+### 8.2 目標構成
 
 ```text
 v3/
@@ -173,53 +194,67 @@ v3/
 ├─ css/
 │  └─ app.css
 └─ js/
-   ├─ constants.js
    ├─ config.js
+   ├─ constants.js
    ├─ state.js
+   ├─ dom.js
+   ├─ ui.js
    ├─ firestore.js
    ├─ quiz.js
    ├─ reward.js
    ├─ zukan.js
-   ├─ ui.js
    └─ app.js
 ```
 
-### 8.2 分割方針
+### 8.3 分割方針
 
 ```text
-constants.js:
-- 固定値、ユーザー定義、世代名、クイズ定数
-
 config.js:
 - Firebase設定
+- window.AppConfig
+
+constants.js:
+- 固定値、ユーザー定義、世代名、クイズ定数
+- window.AppConstants
 
 state.js:
 - アプリ状態、保存中フラグ、選択ユーザー、クイズ進行、図鑑状態、マスターキャッシュ
+- window.AppState
 
-firestore.js:
-- Firebase初期化、users_v2読込、masters読込、users_v2保存transaction
-
-quiz.js:
-- 問題生成、選択肢生成、クイズ進行補助
-
-reward.js:
-- 報酬数計算、未取得ポケモン抽選、世代クリア判定、全世代コンプリート判定
-
-zukan.js:
-- 図鑑表示、図鑑グリッド、ポケモン詳細モーダル
+dom.js:
+- DOM参照の集約
+- window.AppDom
 
 ui.js:
 - 画面切り替え、メニュー、結果、世代開始、世代クリア、全世代コンプリート表示
+- window.AppUI
+
+firestore.js:
+- Firebase初期化、users_v2読込、masters読込、users_v2保存transaction
+- window.AppFirestore
+
+quiz.js:
+- 問題生成、選択肢生成、クイズ進行、回答処理
+- window.AppQuiz
+
+reward.js:
+- 報酬数計算、未取得ポケモン抽選、世代クリア判定、全世代コンプリート判定、報酬保存フロー
+- window.AppReward
+
+zukan.js:
+- 図鑑表示、図鑑グリッド、ポケモン詳細モーダル
+- window.AppZukan
 
 app.js:
-- DOM初期化、イベントハンドラ登録、アプリ起動
+- イベントハンドラ登録、アプリ起動
 ```
 
-### 8.3 Phase 1Bでやらないこと
+### 8.4 Phase 1Bでやらないこと
 
 ```text
 - ES Modules化
 - import / export 化
+- type="module" 導入
 - TypeScript化
 - npm / build 導入
 - クイズレベル追加
@@ -234,7 +269,42 @@ app.js:
 - archive/ の変更
 ```
 
-## 9. V3実機確認方針
+## 9. V3 Phase 2: ES Modules化
+
+### 9.1 目的
+
+Phase 2では、Phase 1Bで作った責務境界を前提に、`import` / `export` を導入します。
+
+Phase 1Bでは `window.AppXXX` 名前空間方式で分割し、Phase 2でES Modulesへ移行します。
+
+### 9.2 Phase 2の想定
+
+```text
+- type="module" を導入する
+- main.js を起点にする
+- import / export で依存関係を明示する
+- window.AppXXX 依存を段階的に削減する
+- build tool はまだ導入しない
+```
+
+想定読み込み:
+
+```html
+<script type="module" src="./js/main.js"></script>
+```
+
+### 9.3 Phase 2でやらないこと
+
+```text
+- npm / build 導入
+- Vite / React / Next.js 導入
+- TypeScript化
+- クイズ仕様変更
+- 報酬仕様変更
+- Firestoreデータモデル変更
+```
+
+## 10. V3実機確認方針
 
 V3の確認は、GitHub Pages上の `/pokemon-math/v3/` で行います。
 
@@ -262,12 +332,13 @@ V3の確認は、GitHub Pages上の `/pokemon-math/v3/` で行います。
 
 `ryoma` / `sara` は実データのため、原則として表示確認のみとします。
 
-## 10. V3完了条件
+## 11. V3完了条件
 
 V3の短期完了条件:
 
 ```text
 - docs/v3_refactoring_plan.md が追加されている
+- docs/v3_phase_1b_design.md が追加されている
 - v3/ ディレクトリ方式が合意されている
 - 相対パス方針が明記されている
 ```
@@ -286,21 +357,33 @@ V3 Phase 1B完了条件:
 
 ```text
 - v3/js/ がB案の責務単位に分割されている
+- dom.js にDOM参照が集約されている
 - state.js に状態管理が集約されている
 - firestore.js にFirestore操作が集約されている
+- window.AppXXX 名前空間方式でファイル間参照できている
 - v3/ でguestによる基本回帰確認ができている
 - V2 Main root index.html が変更されていない
+```
+
+V3 Phase 2完了条件:
+
+```text
+- type="module" が導入されている
+- main.js が起点になっている
+- import / export で依存関係が明示されている
+- window.AppXXX 依存を削減できている
+- v3/ でguestによる基本回帰確認ができている
 ```
 
 V3プロジェクト完了条件:
 
 ```text
-- V3 Phase 1A / 1B が完了している
+- V3 Phase 1A / 1B / 2 が完了している
 - /pokemon-math/v3/ で基本動作確認が完了している
 - root index.html へ昇格するかどうかを判断できる状態になっている
 ```
 
-## 11. V3 Main昇格判断
+## 12. V3 Main昇格判断
 
 V3で十分に検証できた後、別PRで root `index.html` への昇格を検討します。
 
