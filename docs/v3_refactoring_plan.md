@@ -1,6 +1,6 @@
 # V3 リファクタリング計画
 
-最終更新: 2026-06-06
+最終更新: 2026-06-07
 
 ## 1. 目的
 
@@ -69,7 +69,7 @@ Phase 1Aの読み込み例:
 <script src="./js/app.js" defer></script>
 ```
 
-Phase 1Bの読み込み例:
+Phase 1B以降の読み込み例:
 
 ```html
 <script src="./js/config.js" defer></script>
@@ -108,7 +108,7 @@ V3は、あくまで検証用ディレクトリです。V3の存在によって 
 
 ## 6. V3 Phase 0: ドキュメント整備
 
-V3に入る前に、以下をドキュメントで整理します。
+V3に入る前に、以下をドキュメントで整理しました。
 
 ```text
 - V3は v3/ ディレクトリで開発・検証する
@@ -117,6 +117,8 @@ V3に入る前に、以下をドキュメントで整理します。
 - CSS / JavaScript は相対パスで読み込む
 - canary/ はV2 Canary履歴として維持し、V3には流用しない
 ```
+
+完了済みです。
 
 ## 7. V3 Phase 1A: CSS / JS 外出し
 
@@ -166,6 +168,9 @@ v3/
 Phase 1Aは完了済みです。
 
 ```text
+PR #24: Add V3 Phase 1A verification app
+状態: merged
+
 - v3/index.html 追加済み
 - v3/css/app.css 追加済み
 - v3/js/app.js 追加済み
@@ -269,15 +274,124 @@ app.js:
 - archive/ の変更
 ```
 
-## 9. V3 Phase 2: ES Modules化
+### 8.5 完了状況
+
+Phase 1Bは完了済みです。
+
+```text
+PR #26: Split V3 JavaScript into namespaces
+状態: merged
+
+- v3/index.html のscript読み込みを10本構成に変更
+- v3/js/app.js をイベント登録・起動処理に縮小
+- config / constants / state / dom / ui / firestore / quiz / reward / zukan に分割
+- window.AppXXX 名前空間方式で動作
+- /pokemon-math/v3/ で実機確認済み
+```
+
+## 9. V3 Phase 1C: 分割後の安定化・軽微整理
 
 ### 9.1 目的
+
+Phase 1Bで分割したJavaScriptを、動作確認済み状態を崩さない範囲で軽微整理します。
+
+### 9.2 実施内容
+
+```text
+- 未使用 window.AppConfig 参照を削除
+- dom.js / ui.js / quiz.js の明らかなインデントを整形
+- reward.js / zukan.js は未使用 config 削除のみ
+```
+
+### 9.3 Phase 1Cでやらないこと
+
+```text
+- ロジック変更
+- UI文言変更
+- Firestore仕様変更
+- 報酬仕様変更
+- ES Modules化
+- import / export 化
+- root index.html の変更
+- v3/index.html の変更
+- v3/css/app.css の変更
+```
+
+### 9.4 完了状況
+
+Phase 1Cは完了済みです。
+
+```text
+PR #27: Clean up V3 Phase 1C JavaScript namespaces
+状態: merged
+
+- v3/js/dom.js
+- v3/js/quiz.js
+- v3/js/reward.js
+- v3/js/ui.js
+- v3/js/zukan.js
+
+/pokemon-math/v3/ で実機確認済み
+```
+
+## 10. V3 Phase 1D: 不正解時に正解選択肢を表示
+
+### 10.1 目的
+
+不正解時に正解の選択肢を見せることで、子どもが間違えた直後に正しい答えを確認できるようにします。
+
+### 10.2 実施内容
+
+```text
+- 不正解時に、選択した誤答ボタンへ wrong を付与
+- 不正解時に、正解ボタンへ correct を付与
+- 不正解時メッセージに正解値を表示
+- 次の問題へ進むまで wrong / correct 表示を維持
+- 次の問題では resetAnswerButtons() で表示をリセット
+```
+
+変更箇所:
+
+```text
+v3/js/quiz.js
+answerQuestion(button)
+```
+
+### 10.3 Phase 1Dでやらないこと
+
+```text
+- 問題数変更
+- 正解数カウント仕様変更
+- 報酬付与仕様変更
+- QUIZ_NEXT_DELAY_MS 変更
+- Firestore仕様変更
+- 図鑑仕様変更
+- CSS変更
+- ES Modules化
+- import / export 化
+```
+
+### 10.4 完了状況
+
+Phase 1Dは完了済みです。
+
+```text
+PR #28: Show correct answer after wrong V3 quiz choice
+状態: merged
+
+- v3/js/quiz.js のみ変更
+- /pokemon-math/v3/ で実機確認済み
+```
+
+## 11. V3 Phase 2: ES Modules化
+
+### 11.1 目的
 
 Phase 2では、Phase 1Bで作った責務境界を前提に、`import` / `export` を導入します。
 
 Phase 1Bでは `window.AppXXX` 名前空間方式で分割し、Phase 2でES Modulesへ移行します。
 
-### 9.2 Phase 2の想定
+### 11.2 Phase 2の想定
 
 ```text
 - type="module" を導入する
@@ -293,7 +407,7 @@ Phase 1Bでは `window.AppXXX` 名前空間方式で分割し、Phase 2でES Mod
 <script type="module" src="./js/main.js"></script>
 ```
 
-### 9.3 Phase 2でやらないこと
+### 11.3 Phase 2でやらないこと
 
 ```text
 - npm / build 導入
@@ -304,7 +418,24 @@ Phase 1Bでは `window.AppXXX` 名前空間方式で分割し、Phase 2でES Mod
 - Firestoreデータモデル変更
 ```
 
-## 10. V3実機確認方針
+### 11.4 Phase 2着手前に決めること
+
+```text
+- ES Modules化を1PRで行うか、2A/2Bに分けるか
+- main.js 起点にするか、app.js 起点にするか
+- state.js を mutable singleton として export するか
+- dom.js のDOM取得タイミングをどう扱うか
+- firestore.js / reward.js / zukan.js などの循環依存をどう避けるか
+- window.AppXXX を一気に外すか、段階的に外すか
+```
+
+候補ドキュメント:
+
+```text
+docs/v3_phase_2_design.md
+```
+
+## 12. V3実機確認方針
 
 V3の確認は、GitHub Pages上の `/pokemon-math/v3/` で行います。
 
@@ -320,6 +451,11 @@ V3の確認は、GitHub Pages上の `/pokemon-math/v3/` で行います。
 - 現在世代の進捗が表示される
 - レベル選択ができる
 - クイズが5問進行する
+- 正解時に正解ボタンが correct 表示になる
+- 不正解時に誤答ボタンが wrong 表示になる
+- 不正解時に正解ボタンが correct 表示になる
+- 不正解時に「せいかいは X」が表示される
+- 次の問題で correct / wrong 表示がリセットされる
 - 結果画面が表示される
 - 4問以上正解でポケモン取得処理が動く
 - Firestore users_v2/guest に保存される
@@ -332,13 +468,14 @@ V3の確認は、GitHub Pages上の `/pokemon-math/v3/` で行います。
 
 `ryoma` / `sara` は実データのため、原則として表示確認のみとします。
 
-## 11. V3完了条件
+## 13. V3完了条件
 
 V3の短期完了条件:
 
 ```text
-- docs/v3_refactoring_plan.md が追加されている
+- docs/v3_refactoring_plan.md が追加・更新されている
 - docs/v3_phase_1b_design.md が追加されている
+- docs/v3_handoff.md が追加されている
 - v3/ ディレクトリ方式が合意されている
 - 相対パス方針が明記されている
 ```
@@ -365,6 +502,24 @@ V3 Phase 1B完了条件:
 - V2 Main root index.html が変更されていない
 ```
 
+V3 Phase 1C完了条件:
+
+```text
+- 未使用参照が整理されている
+- 明らかなインデント崩れが整理されている
+- ロジック変更なしで /pokemon-math/v3/ の基本動作確認ができている
+```
+
+V3 Phase 1D完了条件:
+
+```text
+- 不正解時に誤答ボタンが wrong 表示になる
+- 不正解時に正解ボタンが correct 表示になる
+- 不正解時に正解値が表示される
+- 次の問題で表示がリセットされる
+- 正解数カウント、報酬仕様、Firestore仕様に影響がない
+```
+
 V3 Phase 2完了条件:
 
 ```text
@@ -378,12 +533,12 @@ V3 Phase 2完了条件:
 V3プロジェクト完了条件:
 
 ```text
-- V3 Phase 1A / 1B / 2 が完了している
+- V3 Phase 1A / 1B / 1C / 1D / 2 が完了している
 - /pokemon-math/v3/ で基本動作確認が完了している
 - root index.html へ昇格するかどうかを判断できる状態になっている
 ```
 
-## 12. V3 Main昇格判断
+## 14. V3 Main昇格判断
 
 V3で十分に検証できた後、別PRで root `index.html` への昇格を検討します。
 
