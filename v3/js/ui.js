@@ -1,166 +1,165 @@
 (function() {
   "use strict";
 
-  const config = window.AppConfig;
   const constants = window.AppConstants;
   const state = window.AppState;
   const dom = window.AppDom;
 
-    function showScreen(screenName) {
-      Object.values(dom.screens).forEach(function(screen) {
-        screen.classList.remove("active");
-      });
-      dom.screens[screenName].classList.add("active");
-      dom.appShell.classList.toggle("hide-header", screenName !== "title" && screenName !== "user");
-      hidePlaceholderMessage();
-    }
+  function showScreen(screenName) {
+    Object.values(dom.screens).forEach(function(screen) {
+      screen.classList.remove("active");
+    });
+    dom.screens[screenName].classList.add("active");
+    dom.appShell.classList.toggle("hide-header", screenName !== "title" && screenName !== "user");
+    hidePlaceholderMessage();
+  }
 
-    function showError(message) {
-      dom.errorMessage.textContent = message;
-      showScreen("error");
-    }
+  function showError(message) {
+    dom.errorMessage.textContent = message;
+    showScreen("error");
+  }
 
-    function showPlaceholderMessage(message) {
-      dom.placeholderMessage.textContent = message || "";
-      dom.placeholderMessage.classList.add("show");
-      window.setTimeout(function() {
-        dom.placeholderMessage.classList.remove("show");
-      }, 2400);
-    }
-
-    function hidePlaceholderMessage() {
+  function showPlaceholderMessage(message) {
+    dom.placeholderMessage.textContent = message || "";
+    dom.placeholderMessage.classList.add("show");
+    window.setTimeout(function() {
       dom.placeholderMessage.classList.remove("show");
-    }
+    }, 2400);
+  }
 
-    function setLoadingMessage(mainMessage, detailMessage) {
-      dom.loadingMainMessage.textContent = mainMessage;
-      dom.loadingUserName.textContent = detailMessage || "";
-    }
+  function hidePlaceholderMessage() {
+    dom.placeholderMessage.classList.remove("show");
+  }
 
-    function getRegionName(generation) {
-      return constants.GENERATION_REGION_NAMES[generation] || "ポケモン";
-    }
+  function setLoadingMessage(mainMessage, detailMessage) {
+    dom.loadingMainMessage.textContent = mainMessage;
+    dom.loadingUserName.textContent = detailMessage || "";
+  }
 
-    function getGenerationLabel(generation) {
-      return "第" + generation + "世代";
-    }
+  function getRegionName(generation) {
+    return constants.GENERATION_REGION_NAMES[generation] || "ポケモン";
+  }
 
-    function normalizeGenerationNumber(value, fallbackValue) {
-      const numericValue = Number(value);
-      if (Number.isInteger(numericValue) && numericValue >= 1 && numericValue <= 9) {
-        return numericValue;
-      }
-      const numericFallback = Number(fallbackValue);
-      if (Number.isInteger(numericFallback) && numericFallback >= 1 && numericFallback <= 9) {
-        return numericFallback;
-      }
-      return 1;
-    }
+  function getGenerationLabel(generation) {
+    return "第" + generation + "世代";
+  }
 
-    function getGenerationStartStorageKey(userId, generation) {
-      return "v2_start_screen_shown_" + userId + "_gen_" + generation;
+  function normalizeGenerationNumber(value, fallbackValue) {
+    const numericValue = Number(value);
+    if (Number.isInteger(numericValue) && numericValue >= 1 && numericValue <= 9) {
+      return numericValue;
     }
+    const numericFallback = Number(fallbackValue);
+    if (Number.isInteger(numericFallback) && numericFallback >= 1 && numericFallback <= 9) {
+      return numericFallback;
+    }
+    return 1;
+  }
 
-    function hasShownGenerationStart(userId, generation) {
-      try {
-        return window.sessionStorage.getItem(getGenerationStartStorageKey(userId, generation)) === "1";
-      } catch (error) {
-        return false;
-      }
-    }
+  function getGenerationStartStorageKey(userId, generation) {
+    return "v2_start_screen_shown_" + userId + "_gen_" + generation;
+  }
 
-    function markGenerationStartShown(userId, generation) {
-      try {
-        window.sessionStorage.setItem(getGenerationStartStorageKey(userId, generation), "1");
-      } catch (error) {
-        // sessionStorage が使えない場合も、プレイは止めません。
-      }
+  function hasShownGenerationStart(userId, generation) {
+    try {
+      return window.sessionStorage.getItem(getGenerationStartStorageKey(userId, generation)) === "1";
+    } catch (error) {
+      return false;
     }
+  }
 
-    function getGenerationText(clearedGenerations) {
-      if (clearedGenerations === 9) return "全世代コンプリート！";
-      const nextGeneration = clearedGenerations + 1;
-      return constants.GENERATION_NAMES[nextGeneration] || "世代が わかりません";
+  function markGenerationStartShown(userId, generation) {
+    try {
+      window.sessionStorage.setItem(getGenerationStartStorageKey(userId, generation), "1");
+    } catch (error) {
+      // sessionStorage が使えない場合も、プレイは止めません。
     }
+  }
 
-    function renderFastMenu(userData) {
-      const ownedCount = new Set(userData.current_gen_owned).size;
-      dom.menuDisplayName.textContent = userData.displayName;
-      if (userData.cleared_generations === 9) {
-        dom.menuProgress.textContent = "全世代コンプリート！\nさんすうに ちょうせんできるよ！";
-      } else {
-        dom.menuProgress.textContent = getGenerationText(userData.cleared_generations) + "  " + ownedCount + "ひき ゲットずみ！";
-      }
-      showScreen("menu");
-    }
+  function getGenerationText(clearedGenerations) {
+    if (clearedGenerations === 9) return "全世代コンプリート！";
+    const nextGeneration = clearedGenerations + 1;
+    return constants.GENERATION_NAMES[nextGeneration] || "世代が わかりません";
+  }
 
-    function showGenerationStart(generation, level) {
-      state.generationStartLevel = level || state.selectedLevel || 1;
-      state.generationStartTarget = generation;
-      markGenerationStartShown(state.selectedUserId, generation);
-      dom.generationStartTitle.textContent = getRegionName(generation) + "ちほうへ！";
-      dom.generationStartMessage.textContent = getGenerationLabel(generation) + "の ポケモンを\nゲットしにいこう！";
-      dom.generationStartButton.disabled = false;
-      showScreen("generationStart");
+  function renderFastMenu(userData) {
+    const ownedCount = new Set(userData.current_gen_owned).size;
+    dom.menuDisplayName.textContent = userData.displayName;
+    if (userData.cleared_generations === 9) {
+      dom.menuProgress.textContent = "全世代コンプリート！\nさんすうに ちょうせんできるよ！";
+    } else {
+      dom.menuProgress.textContent = getGenerationText(userData.cleared_generations) + "  " + ownedCount + "ひき ゲットずみ！";
     }
+    showScreen("menu");
+  }
 
-    function setResultActionDisabled(disabled) {
-      dom.resultRetryButton.disabled = disabled;
-      dom.resultZukanButton.disabled = disabled;
-      dom.resultMenuButton.disabled = disabled;
-      dom.resultClearButton.disabled = disabled;
-      dom.resultCompleteButton.disabled = disabled;
-    }
+  function showGenerationStart(generation, level) {
+    state.generationStartLevel = level || state.selectedLevel || 1;
+    state.generationStartTarget = generation;
+    markGenerationStartShown(state.selectedUserId, generation);
+    dom.generationStartTitle.textContent = getRegionName(generation) + "ちほうへ！";
+    dom.generationStartMessage.textContent = getGenerationLabel(generation) + "の ポケモンを\nゲットしにいこう！";
+    dom.generationStartButton.disabled = false;
+    showScreen("generationStart");
+  }
 
-    function resetResultProgressActions() {
-      dom.resultClearButton.classList.add("hidden");
-      dom.resultCompleteButton.classList.add("hidden");
-      dom.resultRetryButton.classList.remove("hidden");
-      dom.resultZukanButton.classList.remove("hidden");
-      dom.resultMenuButton.classList.remove("hidden");
-      dom.resultClearButton.textContent = "第1世代クリア！";
-      dom.resultRetryButton.textContent = "同じレベルでつづける";
-    }
+  function setResultActionDisabled(disabled) {
+    dom.resultRetryButton.disabled = disabled;
+    dom.resultZukanButton.disabled = disabled;
+    dom.resultMenuButton.disabled = disabled;
+    dom.resultClearButton.disabled = disabled;
+    dom.resultCompleteButton.disabled = disabled;
+  }
 
-    function showResultClearOnlyAction(clearedGeneration) {
-      const generation = normalizeGenerationNumber(clearedGeneration, state.currentUserData ? state.currentUserData.cleared_generations : 1);
-      dom.resultClearButton.textContent = getGenerationLabel(generation) + "クリア！";
-      dom.resultClearButton.classList.remove("hidden");
-      dom.resultCompleteButton.classList.add("hidden");
-      dom.resultRetryButton.classList.add("hidden");
-      dom.resultZukanButton.classList.add("hidden");
-      dom.resultMenuButton.classList.add("hidden");
-    }
+  function resetResultProgressActions() {
+    dom.resultClearButton.classList.add("hidden");
+    dom.resultCompleteButton.classList.add("hidden");
+    dom.resultRetryButton.classList.remove("hidden");
+    dom.resultZukanButton.classList.remove("hidden");
+    dom.resultMenuButton.classList.remove("hidden");
+    dom.resultClearButton.textContent = "第1世代クリア！";
+    dom.resultRetryButton.textContent = "同じレベルでつづける";
+  }
 
-    function showGenerationClear() {
-      if (!state.lastProgressResult || !state.lastProgressResult.clearedGeneration) {
-        renderFastMenu(state.currentUserData);
-        return;
-      }
-      if (state.lastProgressResult.isAllComplete || state.currentUserData.cleared_generations === 9) {
-        showAllComplete();
-        return;
-      }
-      const clearedGeneration = state.lastProgressResult.clearedGeneration;
-      const nextGeneration = state.lastProgressResult.nextGeneration || (state.currentUserData.cleared_generations + 1);
-      dom.generationClearTitle.textContent = getGenerationLabel(clearedGeneration) + " クリア！";
-      dom.generationClearMessage.textContent = getRegionName(clearedGeneration) + "ちほうの ポケモンを\nぜんぶ ゲットしたよ！\n\n" +
-        getGenerationLabel(nextGeneration) + "（" + getRegionName(nextGeneration) + "）が\nあたらしく 解放されたよ！";
-      showScreen("generationClear");
-    }
+  function showResultClearOnlyAction(clearedGeneration) {
+    const generation = normalizeGenerationNumber(clearedGeneration, state.currentUserData ? state.currentUserData.cleared_generations : 1);
+    dom.resultClearButton.textContent = getGenerationLabel(generation) + "クリア！";
+    dom.resultClearButton.classList.remove("hidden");
+    dom.resultCompleteButton.classList.add("hidden");
+    dom.resultRetryButton.classList.add("hidden");
+    dom.resultZukanButton.classList.add("hidden");
+    dom.resultMenuButton.classList.add("hidden");
+  }
 
-    function showAllComplete() {
-      dom.allCompleteMessage.textContent = "すべての ポケモンを\nゲットしたよ！";
-      showScreen("allComplete");
+  function showGenerationClear() {
+    if (!state.lastProgressResult || !state.lastProgressResult.clearedGeneration) {
+      renderFastMenu(state.currentUserData);
+      return;
     }
+    if (state.lastProgressResult.isAllComplete || state.currentUserData.cleared_generations === 9) {
+      showAllComplete();
+      return;
+    }
+    const clearedGeneration = state.lastProgressResult.clearedGeneration;
+    const nextGeneration = state.lastProgressResult.nextGeneration || (state.currentUserData.cleared_generations + 1);
+    dom.generationClearTitle.textContent = getGenerationLabel(clearedGeneration) + " クリア！";
+    dom.generationClearMessage.textContent = getRegionName(clearedGeneration) + "ちほうの ポケモンを\nぜんぶ ゲットしたよ！\n\n" +
+      getGenerationLabel(nextGeneration) + "（" + getRegionName(nextGeneration) + "）が\nあたらしく 解放されたよ！";
+    showScreen("generationClear");
+  }
 
-    function continueAfterGenerationClear() {
-      if (!state.currentUserData) {
-        renderFastMenu(state.currentUserData);
-        return;
-      }
-      window.AppQuiz.startQuiz(state.selectedLevel);
+  function showAllComplete() {
+    dom.allCompleteMessage.textContent = "すべての ポケモンを\nゲットしたよ！";
+    showScreen("allComplete");
+  }
+
+  function continueAfterGenerationClear() {
+    if (!state.currentUserData) {
+      renderFastMenu(state.currentUserData);
+      return;
     }
+    window.AppQuiz.startQuiz(state.selectedLevel);
+  }
 
   window.AppUI = {
     showScreen,
