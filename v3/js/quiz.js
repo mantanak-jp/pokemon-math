@@ -154,7 +154,12 @@
       dom.quizScore.textContent = "せいかい: " + state.correctCount;
     } else {
       button.classList.add("wrong");
-      dom.quizAlert.textContent = "❌ ざんねん！";
+      dom.answerButtons.forEach(function(answerButton) {
+        if (Number(answerButton.textContent) === state.currentCorrectAnswer) {
+          answerButton.classList.add("correct");
+        }
+      });
+      dom.quizAlert.textContent = "❌ ざんねん！\nせいかいは " + state.currentCorrectAnswer;
       dom.quizAlert.className = "quiz-alert wrong";
     }
     state.quizTimerId = window.setTimeout(function() {
