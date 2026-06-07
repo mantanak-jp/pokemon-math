@@ -2,6 +2,16 @@ import { QUIZ_QUESTION_COUNT } from "./constants.js";
 import { state } from "./state.js";
 import { dom } from "./dom.js";
 import { shuffleArray } from "./utils.js";
+import {
+  resetResultProgressActions,
+  setResultActionDisabled,
+  showResultClearOnlyAction,
+  showScreen
+} from "./ui.js";
+import {
+  getCurrentGenerationMaster,
+  savePendingRewardWithRetry
+} from "./firestore.js";
 
 export function getRewardPlaceholderMessage(score) {
   if (score >= 4) {
@@ -53,7 +63,7 @@ export async function prepareRewardState(rewardCount) {
     return [];
   }
 
-  const pokemonList = await window.AppFirestore.getCurrentGenerationMaster(state.currentUserData);
+  const pokemonList = await getCurrentGenerationMaster(state.currentUserData);
   const uniqueOwnedIds = Array.from(new Set(state.currentUserData.current_gen_owned));
   const selectedPokemon = selectRewardPokemon(pokemonList, uniqueOwnedIds, rewardCount, state.selectedLevel);
 
@@ -105,8 +115,8 @@ export function renderRewardImages(pokemonList) {
 
 export function renderRewardSaving() {
   state.isSavingReward = true;
-  window.AppUI.setResultActionDisabled(true);
-  window.AppUI.resetResultProgressActions();
+  setResultActionDisabled(true);
+  resetResultProgressActions();
   dom.retryRewardButton.classList.add("hidden");
   dom.retryRewardButton.disabled = true;
   dom.resultSaveStatus.className = "result-save-status";
@@ -119,10 +129,10 @@ export function renderRewardSuccess(saveResult) {
   const caughtPokemon = saveResult.caughtPokemon || [];
   state.isSavingReward = false;
   state.lastProgressResult = saveResult;
-  window.AppUI.setResultActionDisabled(false);
+  setResultActionDisabled(false);
   dom.retryRewardButton.classList.add("hidden");
   dom.retryRewardButton.disabled = true;
-  window.AppUI.resetResultProgressActions();
+  resetResultProgressActions();
 
   renderRewardImages(caughtPokemon);
 
@@ -137,10 +147,10 @@ export function renderRewardSuccess(saveResult) {
   dom.resultSaveStatus.className = "result-save-status success";
   if (saveResult.isAllComplete) {
     dom.resultSaveStatus.textContent = "ほぞんできました！\nすべての ポケモンを ゲットしたよ！";
-    window.AppUI.showResultClearOnlyAction(saveResult.clearedGeneration || 9);
+    showResultClearOnlyAction(saveResult.clearedGeneration || 9);
   } else if (saveResult.isGenerationComplete) {
     dom.resultSaveStatus.textContent = "ほぞんできました！\nこの世代のポケモンを ぜんぶ ゲットしたよ！";
-    window.AppUI.showResultClearOnlyAction(saveResult.clearedGeneration);
+    showResultClearOnlyAction(saveResult.clearedGeneration);
   } else {
     dom.resultSaveStatus.textContent = "ほぞんできました！";
   }
@@ -162,17 +172,17 @@ export function renderAllCompleteQuizResult() {
   renderRewardImages([]);
   dom.retryRewardButton.classList.add("hidden");
   dom.retryRewardButton.disabled = true;
-  window.AppUI.resetResultProgressActions();
+  resetResultProgressActions();
   dom.resultSaveStatus.className = "result-save-status success";
   dom.resultSaveStatus.textContent = "";
   dom.resultMessage.textContent = "もう ぜんぶ ゲットしているよ！\nさんすうは つづけられるよ！";
-  window.AppUI.setResultActionDisabled(false);
+  setResultActionDisabled(false);
 }
 
 export function renderRewardFailure() {
   state.isSavingReward = false;
-  window.AppUI.setResultActionDisabled(false);
-  window.AppUI.resetResultProgressActions();
+  setResultActionDisabled(false);
+  resetResultProgressActions();
   dom.resultRetryButton.classList.add("hidden");
   dom.resultZukanButton.classList.add("hidden");
   dom.resultMessage.textContent = "ゲットできませんでした";
@@ -188,20 +198,20 @@ export function renderNoRewardResult(score) {
   dom.retryRewardButton.disabled = true;
   dom.resultSaveStatus.className = "result-save-status";
   dom.resultSaveStatus.textContent = "";
-  window.AppUI.resetResultProgressActions();
+  resetResultProgressActions();
   dom.resultMessage.textContent = getRewardPlaceholderMessage(score);
-  window.AppUI.setResultActionDisabled(false);
+  setResultActionDisabled(false);
 }
 
 export function renderNoAvailableReward() {
   renderRewardImages([]);
   dom.retryRewardButton.classList.add("hidden");
   dom.retryRewardButton.disabled = true;
-  window.AppUI.resetResultProgressActions();
+  resetResultProgressActions();
   dom.resultMessage.textContent = "この世代のポケモンは\nぜんぶ ゲットずみ！";
   dom.resultSaveStatus.className = "result-save-status";
   dom.resultSaveStatus.textContent = "";
-  window.AppUI.setResultActionDisabled(false);
+  setResultActionDisabled(false);
 }
 
 export function calculateGenerationComplete(userData, pokemonList) {
@@ -222,7 +232,7 @@ export async function handleRewardSave() {
   renderRewardSaving();
 
   try {
-    const saveResult = await window.AppFirestore.savePendingRewardWithRetry();
+    const saveResult = await savePendingRewardWithRetry();
     renderRewardSuccess(saveResult);
   } catch (error) {
     renderRewardFailure();
@@ -237,10 +247,10 @@ export async function showResult() {
   dom.resultSaveStatus.textContent = "";
   dom.retryRewardButton.classList.add("hidden");
   dom.retryRewardButton.disabled = true;
-  window.AppUI.resetResultProgressActions();
+  resetResultProgressActions();
   renderRewardImages([]);
-  window.AppUI.setResultActionDisabled(false);
-  window.AppUI.showScreen("result");
+  setResultActionDisabled(false);
+  showScreen("result");
 
   const rewardCount = getRewardCount(state.correctCount);
   if (state.currentUserData && state.currentUserData.cleared_generations === 9 && rewardCount > 0) {

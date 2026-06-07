@@ -5,6 +5,14 @@ import {
 import { state } from "./state.js";
 import { dom } from "./dom.js";
 import { randomInt, shuffleArray } from "./utils.js";
+import {
+  getGenerationText,
+  hasShownGenerationStart,
+  showGenerationStart,
+  showScreen
+} from "./ui.js";
+import { prefetchCurrentGenerationMaster } from "./firestore.js";
+import { showResult } from "./reward.js";
 
 export function makeQuestionForLevel(level) {
   let n1;
@@ -67,17 +75,17 @@ export function shouldShowGenerationStartForLevel() {
   if (!state.currentUserData || state.currentUserData.cleared_generations === 9) return false;
   if (new Set(state.currentUserData.current_gen_owned).size !== 0) return false;
   const generation = state.currentUserData.cleared_generations + 1;
-  return !window.AppUI.hasShownGenerationStart(state.selectedUserId, generation);
+  return !hasShownGenerationStart(state.selectedUserId, generation);
 }
 
 export function startLevelFlow(level) {
   if (!state.currentUserData) {
-    window.AppUI.showScreen("user");
+    showScreen("user");
     return;
   }
   state.selectedLevel = level;
   if (shouldShowGenerationStartForLevel()) {
-    window.AppUI.showGenerationStart(state.currentUserData.cleared_generations + 1, state.selectedLevel);
+    showGenerationStart(state.currentUserData.cleared_generations + 1, state.selectedLevel);
     return;
   }
   startQuiz(state.selectedLevel);
@@ -85,7 +93,7 @@ export function startLevelFlow(level) {
 
 export function startQuiz(level) {
   if (!state.currentUserData) {
-    window.AppUI.showScreen("user");
+    showScreen("user");
     return;
   }
   state.selectedLevel = level;
@@ -101,9 +109,9 @@ export function startQuiz(level) {
   dom.quizScore.textContent = "せいかい: 0";
   dom.quizAlert.textContent = "";
   dom.quizAlert.className = "quiz-alert";
-  dom.quizGeneration.textContent = window.AppUI.getGenerationText(state.currentUserData.cleared_generations);
-  window.AppFirestore.prefetchCurrentGenerationMaster(state.currentUserData);
-  window.AppUI.showScreen("quiz");
+  dom.quizGeneration.textContent = getGenerationText(state.currentUserData.cleared_generations);
+  prefetchCurrentGenerationMaster(state.currentUserData);
+  showScreen("quiz");
   makeNextQuestion();
 }
 
@@ -153,7 +161,7 @@ export function answerQuestion(button) {
     if (state.currentQuestionIndex < QUIZ_QUESTION_COUNT) {
       makeNextQuestion();
     } else {
-      window.AppReward.showResult();
+      showResult();
     }
   }, QUIZ_NEXT_DELAY_MS);
 }
