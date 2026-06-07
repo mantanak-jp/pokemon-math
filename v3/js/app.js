@@ -1,7 +1,15 @@
 import { state } from "./state.js";
 import { dom } from "./dom.js";
+import { formatDevBuildInfo } from "./version.js";
+
+function renderDevBuildInfo() {
+  if (!dom.devBuildInfo) return;
+  dom.devBuildInfo.textContent = formatDevBuildInfo();
+}
 
 export function setupEvents() {
+  renderDevBuildInfo();
+
   dom.startButton.addEventListener("click", function() {
     if (!state.firebaseReady) {
       window.AppUI.showError("Firebaseのじゅんびが まだできていません。");
