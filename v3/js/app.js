@@ -1,6 +1,34 @@
 import { state } from "./state.js";
 import { dom } from "./dom.js";
 import { formatDevBuildInfo } from "./version.js";
+import {
+  continueAfterGenerationClear,
+  renderFastMenu,
+  showAllComplete,
+  showError,
+  showGenerationClear,
+  showScreen
+} from "./ui.js";
+import {
+  loadUserData,
+  resetCachedMaster,
+  retryLoadUserData
+} from "./firestore.js";
+import {
+  answerQuestion,
+  startLevelFlow,
+  startQuiz
+} from "./quiz.js";
+import {
+  handleRewardSave,
+  showResult
+} from "./reward.js";
+import {
+  closePokemonModal,
+  openZukan,
+  openZukanForAllComplete,
+  openZukanForUnlockedGeneration
+} from "./zukan.js";
 
 function renderDevBuildInfo() {
   let buildInfo = dom.devBuildInfo;
@@ -21,34 +49,39 @@ export function setupEvents() {
 
   dom.startButton.addEventListener("click", function() {
     if (!state.firebaseReady) {
-      window.AppUI.showError("Firebaseのじゅんびが まだできていません。");
+      showError("Firebaseのじゅんびが まだできていません。");
       return;
     }
-    window.AppUI.showScreen("user");
+    showScreen("user");
   });
+
   document.querySelectorAll("[data-user-id]").forEach(function(button) {
     button.addEventListener("click", function() {
-      window.AppFirestore.loadUserData(button.dataset.userId);
+      loadUserData(button.dataset.userId);
     });
   });
+
   document.querySelectorAll("[data-level]").forEach(function(button) {
     button.addEventListener("click", function() {
-      window.AppQuiz.startLevelFlow(Number(button.dataset.level));
+      startLevelFlow(Number(button.dataset.level));
     });
   });
+
   dom.answerButtons.forEach(function(button) {
     button.addEventListener("click", function() {
-      window.AppQuiz.answerQuestion(button);
+      answerQuestion(button);
     });
   });
-  document.getElementById("user-back-button").addEventListener("click", function() { window.AppUI.showScreen("title"); });
-  document.getElementById("open-zukan-button").addEventListener("click", window.AppZukan.openZukan);
-  document.getElementById("zukan-menu-button").addEventListener("click", function() { window.AppUI.renderFastMenu(state.currentUserData); });
-  dom.pokemonModalBackdrop.addEventListener("click", window.AppZukan.closePokemonModal);
+
+  document.getElementById("user-back-button").addEventListener("click", function() { showScreen("title"); });
+  document.getElementById("open-zukan-button").addEventListener("click", openZukan);
+  document.getElementById("zukan-menu-button").addEventListener("click", function() { renderFastMenu(state.currentUserData); });
+  dom.pokemonModalBackdrop.addEventListener("click", closePokemonModal);
   dom.pokemonModalPanel.addEventListener("click", function(event) {
     event.stopPropagation();
   });
-  document.getElementById("modal-close-button").addEventListener("click", window.AppZukan.closePokemonModal);
+  document.getElementById("modal-close-button").addEventListener("click", closePokemonModal);
+
   document.getElementById("change-user-button").addEventListener("click", function() {
     state.selectedUserId = null;
     state.selectedUserLabel = "";
@@ -59,56 +92,57 @@ export function setupEvents() {
     state.pendingRewardPokemonList = [];
     state.lastProgressResult = null;
     state.generationStartTarget = null;
-    window.AppFirestore.resetCachedMaster();
-    window.AppZukan.closePokemonModal();
-    window.AppUI.showScreen("user");
+    resetCachedMaster();
+    closePokemonModal();
+    showScreen("user");
   });
+
   dom.resultRetryButton.addEventListener("click", function() {
     if (state.isSavingReward) return;
-    window.AppQuiz.startQuiz(state.selectedLevel);
+    startQuiz(state.selectedLevel);
   });
   dom.resultZukanButton.addEventListener("click", function() {
     if (state.isSavingReward) return;
-    window.AppZukan.openZukan();
+    openZukan();
   });
   dom.resultMenuButton.addEventListener("click", function() {
     if (state.isSavingReward) return;
-    window.AppUI.renderFastMenu(state.currentUserData);
+    renderFastMenu(state.currentUserData);
   });
   dom.resultClearButton.addEventListener("click", function() {
     if (state.isSavingReward) return;
-    window.AppUI.showGenerationClear();
+    showGenerationClear();
   });
   dom.resultCompleteButton.addEventListener("click", function() {
     if (state.isSavingReward) return;
-    window.AppUI.showAllComplete();
+    showAllComplete();
   });
   dom.generationStartButton.addEventListener("click", function() {
-    window.AppQuiz.startQuiz(state.generationStartLevel || state.selectedLevel);
+    startQuiz(state.generationStartLevel || state.selectedLevel);
   });
   document.getElementById("generation-start-menu-button").addEventListener("click", function() {
-    window.AppUI.renderFastMenu(state.currentUserData);
+    renderFastMenu(state.currentUserData);
   });
-  dom.generationClearContinueButton.addEventListener("click", window.AppUI.continueAfterGenerationClear);
-  dom.generationClearZukanButton.addEventListener("click", window.AppZukan.openZukanForUnlockedGeneration);
+  dom.generationClearContinueButton.addEventListener("click", continueAfterGenerationClear);
+  dom.generationClearZukanButton.addEventListener("click", openZukanForUnlockedGeneration);
   document.getElementById("generation-clear-menu-button").addEventListener("click", function() {
-    window.AppUI.renderFastMenu(state.currentUserData);
+    renderFastMenu(state.currentUserData);
   });
   document.getElementById("all-complete-quiz-button").addEventListener("click", function() {
-    window.AppQuiz.startQuiz(state.selectedLevel);
+    startQuiz(state.selectedLevel);
   });
-  document.getElementById("all-complete-zukan-button").addEventListener("click", window.AppZukan.openZukanForAllComplete);
+  document.getElementById("all-complete-zukan-button").addEventListener("click", openZukanForAllComplete);
   document.getElementById("all-complete-menu-button").addEventListener("click", function() {
-    window.AppUI.renderFastMenu(state.currentUserData);
+    renderFastMenu(state.currentUserData);
   });
   dom.retryRewardButton.addEventListener("click", function() {
     if (state.isSavingReward) return;
     if (state.pendingRewardPokemon.length > 0) {
-      window.AppReward.handleRewardSave();
+      handleRewardSave();
     } else {
-      window.AppReward.showResult();
+      showResult();
     }
   });
-  dom.retryButton.addEventListener("click", window.AppFirestore.retryLoadUserData);
-  document.getElementById("error-user-button").addEventListener("click", function() { window.AppUI.showScreen("user"); });
+  dom.retryButton.addEventListener("click", retryLoadUserData);
+  document.getElementById("error-user-button").addEventListener("click", function() { showScreen("user"); });
 }
