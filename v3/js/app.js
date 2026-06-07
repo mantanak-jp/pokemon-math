@@ -1,7 +1,24 @@
 import { state } from "./state.js";
 import { dom } from "./dom.js";
+import { formatDevBuildInfo } from "./version.js";
+
+function renderDevBuildInfo() {
+  let buildInfo = dom.devBuildInfo;
+  if (!buildInfo) {
+    const firebaseStatus = document.getElementById("firebase-status");
+    if (!firebaseStatus || !firebaseStatus.parentElement) return;
+
+    buildInfo = document.createElement("p");
+    buildInfo.id = "dev-build-info";
+    buildInfo.className = "small";
+    firebaseStatus.parentElement.appendChild(buildInfo);
+  }
+  buildInfo.textContent = formatDevBuildInfo();
+}
 
 export function setupEvents() {
+  renderDevBuildInfo();
+
   dom.startButton.addEventListener("click", function() {
     if (!state.firebaseReady) {
       window.AppUI.showError("Firebaseのじゅんびが まだできていません。");

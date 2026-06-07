@@ -14,6 +14,7 @@ const screens = {
 };
 
 const startButton = document.getElementById("start-button");
+const devBuildInfo = document.getElementById("dev-build-info");
 const loadingMainMessage = document.getElementById("loading-main-message");
 const loadingUserName = document.getElementById("loading-user-name");
 const menuDisplayName = document.getElementById("menu-display-name");
@@ -61,7 +62,7 @@ const errorMessage = document.getElementById("error-message");
 const retryButton = document.getElementById("retry-button");
 
 export const dom = {
-  appShell, screens, startButton, loadingMainMessage, loadingUserName, menuDisplayName, menuProgress, placeholderMessage, quizGeneration, quizCount, quizScore, quizProgress, quizQuestion, quizAlert, answerButtons, resultScore, resultRewardImages, resultMessage, resultSaveStatus, retryRewardButton, resultClearButton, resultCompleteButton, resultRetryButton, resultZukanButton, resultMenuButton, generationStartTitle, generationStartMessage, generationStartButton, generationClearTitle, generationClearMessage, generationClearContinueButton, generationClearZukanButton, allCompleteMessage, zukanTabs, zukanGenerationName, zukanGenerationCount, zukanMessage, zukanGrid, pokemonModalBackdrop, pokemonModalPanel, modalPokemonName, modalPokemonImage, modalPokemonTypes, modalPokemonHeight, modalPokemonWeight, modalPokemonFlavor, errorMessage, retryButton
+  appShell, screens, startButton, devBuildInfo, loadingMainMessage, loadingUserName, menuDisplayName, menuProgress, placeholderMessage, quizGeneration, quizCount, quizScore, quizProgress, quizQuestion, quizAlert, answerButtons, resultScore, resultRewardImages, resultMessage, resultSaveStatus, retryRewardButton, resultClearButton, resultCompleteButton, resultRetryButton, resultZukanButton, resultMenuButton, generationStartTitle, generationStartMessage, generationStartButton, generationClearTitle, generationClearMessage, generationClearContinueButton, generationClearZukanButton, allCompleteMessage, zukanTabs, zukanGenerationName, zukanGenerationCount, zukanMessage, zukanGrid, pokemonModalBackdrop, pokemonModalPanel, modalPokemonName, modalPokemonImage, modalPokemonTypes, modalPokemonHeight, modalPokemonWeight, modalPokemonFlavor, errorMessage, retryButton
 };
 
 window.AppDom = dom;
