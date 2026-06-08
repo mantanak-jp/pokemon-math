@@ -1,27 +1,24 @@
-# V3 Country Master Design
+# V3.2 / Phase 4 Country Master Design
 
 作成日: 2026-06-07  
-対象: `v3/` / Firestore `country_masters`  
-位置づけ: V3 Phase 3 国旗クイズ用マスター詳細設計
+更新日: 2026-06-08  
+対象: V3.2 / Phase 4 / Firestore `country_masters`  
+位置づけ: 国旗クイズ用マスター先行設計
 
 ## 1. 全体像と現在地
 
 ```text
-Phase 3-0: 設計整理
-  ├─ country_masters 詳細設計 ← 本ドキュメント
-  └─ Phase 3実装設計
-
-Phase 3A: クイズ種別選択UI追加
-Phase 3B: クイズエンジン汎用化
-Phase 3C: 算数レベル5・6追加
-Phase 3D: country_masters 投入準備
-Phase 3E: 国旗クイズ実装
-Phase 3F: 統合確認・安定化
-Phase 3G: 完了報告
-Phase 3H: main昇格判断準備
+V3 Phase 1: 完了
+V3 Phase 2: ES Modules化完了
+V3 Phase 3 / V3.1: 算数レベル5・6追加 + main昇格判断
+V3 Phase 4 / V3.2: 国旗クイズ追加予定 ← 本ドキュメントの対象
 ```
 
-本ドキュメントは、V3 Phase 3で追加する国旗クイズのための Firestore マスター `country_masters` の設計を定義する。
+当初は、V3 Phase 3で割り算と国旗クイズを同時に実装する案としていた。
+
+その後、リリースリスクを分離するため、V3.1 / Phase 3では算数レベル5・6追加までを実装し、国旗クイズは V3.2 / Phase 4 に分離する方針へ変更した。
+
+本ドキュメントは、V3.2 / Phase 4 で追加予定の国旗クイズに向けた `country_masters` の先行設計として維持する。
 
 ## 2. 目的
 
@@ -38,7 +35,25 @@ Phase 3H: main昇格判断準備
 - 将来の国・首都クイズや地域別出題にも拡張できる余地を残す
 ```
 
-## 3. 外部データソース
+## 3. V3.1 / Phase 3 との関係
+
+V3.1 / Phase 3では、`country_masters` は実装・投入しない。
+
+```text
+V3.1 / Phase 3でやらない:
+- country_masters の追加
+- data/country_masters.generated.json の追加
+- ブラウザ用 country_masters 投入ページ
+- 国旗クイズ
+- クイズ種別選択
+- 国旗画像表示
+```
+
+V3.1 / Phase 3は、算数レベル5・6追加と main昇格判断を対象とする。
+
+本ドキュメントの内容は、V3.2 / Phase 4 で国旗クイズに進む際の設計前提として扱う。
+
+## 4. 外部データソース
 
 初期データソースは REST Countries とする。
 
@@ -47,7 +62,7 @@ REST Countries は current version として v3.1 を提供している。`/v3.1
 参照:
 - https://restcountries.com/
 
-## 4. Firestore 配置
+## 5. Firestore 配置
 
 採用する Firestore コレクションは以下。
 
@@ -64,7 +79,7 @@ country_masters/fr
 country_masters/br
 ```
 
-### 4.1 採用理由
+### 5.1 採用理由
 
 ```text
 1. 既存のポケモン世代マスター masters/gen_{1..9} と明確に分離できる
@@ -81,7 +96,7 @@ prefecture_masters/{prefCode}
 prefecture_shape_masters/{prefCode}
 ```
 
-## 5. countryId 方針
+## 6. countryId 方針
 
 `countryId` は、原則として REST Countries の `cca2` を小文字化した値とする。
 
@@ -92,7 +107,7 @@ FR → fr
 BR → br
 ```
 
-### 5.1 採用理由
+### 6.1 採用理由
 
 ```text
 1. 短く扱いやすい
@@ -101,13 +116,13 @@ BR → br
 4. 国旗クイズの answer value として使いやすい
 ```
 
-### 5.2 例外
+### 6.2 例外
 
 REST Countries 全件相当には国・地域が含まれるため、投入時には `cca2` の欠損チェックを行う。
 
 初期方針としては、`cca2` が存在しないデータは投入対象外とする。
 
-## 6. 登録対象
+## 7. 登録対象
 
 Firestore には REST Countries 全件相当を登録する。
 
@@ -126,7 +141,7 @@ REST Countries 全件相当
 enabled === true のもの
 ```
 
-## 7. 初期 enabled 方針
+## 8. 初期 enabled 方針
 
 初期の `enabled` は以下とする。
 
@@ -143,9 +158,9 @@ enabled: false
 
 一部有名地域は、必要に応じて別途 `enabled_overrides` 的な考え方で制御する。
 
-## 8. difficulty 方針
+## 9. difficulty 方針
 
-`difficulty` は将来用フィールドとして持つが、V3 Phase 3では利用しない。
+`difficulty` は将来用フィールドとして持つが、V3.2 / Phase 4初期では利用しない。
 
 ```js
 difficulty: null
@@ -155,15 +170,15 @@ difficulty: null
 
 ```text
 1. 国旗の難易度判断は主観的になりやすい
-2. V3 Phase 3では国旗クイズに難易度設定を設けない
+2. V3.2 / Phase 4初期では国旗クイズに難易度設定を設けない
 3. 将来拡張の余地だけ残す
 ```
 
-## 9. 日本語国名方針
+## 10. 日本語国名方針
 
 日本語国名は、REST Countries の `translations.jpn.common` を基本に使用する。
 
-国名補正テーブルは必須要件とはしない。初期V3では、最悪やらなくてもよい。
+国名補正テーブルは必須要件とはしない。初期実装では、最悪やらなくてもよい。
 
 ```text
 基本:
@@ -173,7 +188,7 @@ REST Countries translations.jpn.common を使用する
 任意。必要になったら補正テーブルを追加する
 ```
 
-### 9.1 補正が必要になった場合
+### 10.1 補正が必要になった場合
 
 国名補正が必要になった場合は、Firestore を直接正本として手修正するのではなく、補正テーブルを用意し、生成済みJSONを再生成する。
 
@@ -185,9 +200,9 @@ country_masters.generated.json 再生成
 Firestore 再投入
 ```
 
-ただし、V3 Phase 3初期では、国名補正はオプション扱いとする。
+ただし、初期実装では、国名補正はオプション扱いとする。
 
-## 10. 公式名方針
+## 11. 公式名方針
 
 国名は common name と official name の両方を持つ。
 
@@ -201,14 +216,14 @@ officialNameEn
 国旗クイズの選択肢では `countryNameJa` を使う。  
 `officialNameJa` は将来の表示・説明・国名クイズ拡張用として保持する。
 
-## 11. 首都情報方針
+## 12. 首都情報方針
 
 首都情報は、国旗クイズでは不要だが、将来の国・首都クイズ用に有用である。
 
-ただし、V3 Phase 3初期の `country_masters` では、首都情報は必須フィールドとしない。
+ただし、V3.2 / Phase 4初期の `country_masters` では、首都情報は必須フィールドとしない。
 
 ```text
-Phase 3初期:
+初期:
 capitalJa / capitalEn は必須にしない
 
 将来:
@@ -223,7 +238,7 @@ capitalJa / capitalEn は必須にしない
 3. 初期マスターを軽量に保ちたい
 ```
 
-## 12. 国旗画像URL方針
+## 13. 国旗画像URL方針
 
 国旗画像は SVG を優先し、PNG をフォールバックとして持つ。
 
@@ -247,7 +262,7 @@ flagUrl: flagSvgUrl || flagPngUrl
 imageUrl = flagSvgUrl || flagPngUrl || flagUrl
 ```
 
-## 13. 地域情報方針
+## 14. 地域情報方針
 
 地域別出題や誤答候補生成のため、`region` と `subregion` を持つ。
 
@@ -256,9 +271,9 @@ region
 subregion
 ```
 
-V3 Phase 3では、誤答候補を同じ `region` から優先して選ぶため、`region` は国旗クイズ初期実装でも利用する。
+国旗クイズでは、誤答候補を同じ `region` から優先して選ぶため、`region` を利用する。
 
-## 14. 国・地域属性方針
+## 15. 国・地域属性方針
 
 出題対象制御や将来拡張に備え、以下を保持する。
 
@@ -277,7 +292,7 @@ status
 - enabled による手動制御
 ```
 
-## 15. source 情報方針
+## 16. source 情報方針
 
 データ由来と更新履歴を追跡できるように、以下を保持する。
 
@@ -295,9 +310,9 @@ sourceVersion: "v3.1",
 updatedAt: "2026-06-07"
 ```
 
-## 16. 推奨スキーマ
+## 17. 推奨スキーマ
 
-V3 Phase 3 初期の推奨スキーマは以下。
+V3.2 / Phase 4 初期の推奨スキーマは以下。
 
 ```js
 {
@@ -331,9 +346,9 @@ V3 Phase 3 初期の推奨スキーマは以下。
 }
 ```
 
-### 16.1 初期では必須にしない項目
+### 17.1 初期では必須にしない項目
 
-以下は、V3 Phase 3初期では必須にしない。
+以下は、初期では必須にしない。
 
 ```text
 capitalJa
@@ -350,7 +365,7 @@ ccn3
 - 初期マスターを軽量に保つため
 ```
 
-## 17. 国旗クイズ開始時の取得範囲
+## 18. 国旗クイズ開始時の取得範囲
 
 アプリは、国旗クイズ開始時に Firestore から `enabled == true` の `country_masters` のみ取得する。
 
@@ -361,7 +376,7 @@ country_masters where enabled == true
 
 `country_masters` 全件を毎回取得しない。
 
-## 18. キャッシュ方針
+## 19. キャッシュ方針
 
 取得した `enabled == true` の国・地域データは、国旗クイズに必要な軽量データへ整形して `state` に保持する。
 
@@ -370,10 +385,10 @@ country_masters where enabled == true
 アプリ起動中のみ
 
 永続キャッシュ:
-V3 Phase 3では使用しない
+V3.2 / Phase 4初期では使用しない
 ```
 
-`localStorage` / `IndexedDB` 等の永続キャッシュは、V3 Phase 3では使わない。
+`localStorage` / `IndexedDB` 等の永続キャッシュは、V3.2 / Phase 4初期では使わない。
 
 state に保持するデータは、国旗クイズに必要な項目に絞る。
 
@@ -388,7 +403,7 @@ state.countryQuizMasterList = [
 ];
 ```
 
-## 19. 5問内の重複方針
+## 20. 5問内の重複方針
 
 国旗クイズでは、1回の5問内で同じ国・地域を出題しない。
 
@@ -401,7 +416,7 @@ state.countryQuizMasterList = [
 
 実装上は、クイズ中に `usedCountryIds` のようなセットを保持する。
 
-## 20. 誤答候補方針
+## 21. 誤答候補方針
 
 誤答候補は、正解国・地域と同じ `region` から優先して選ぶ。
 
@@ -415,7 +430,7 @@ state.countryQuizMasterList = [
 
 これにより、国旗クイズとして自然な難易度を保ちやすくする。
 
-## 21. JSON生成とFirestore投入の役割分担
+## 22. JSON生成とFirestore投入の役割分担
 
 `country_masters` は、Firestoreへ直接手入力しない。
 
@@ -433,7 +448,7 @@ GitHubリポジトリに保存
 ブラウザ用の開発者向け投入ページで Firestore に投入
 ```
 
-### 21.1 役割分担
+### 22.1 役割分担
 
 ```text
 ChatGPT:
@@ -450,7 +465,7 @@ ChatGPT:
 - Firestore投入を実行する
 ```
 
-### 21.2 Firestore投入方式
+### 22.2 Firestore投入方式
 
 Firestore投入は、Node.jsスクリプトによる直接投入ではなく、既存運用に近いブラウザ用の開発者向け投入ページで行う。
 
@@ -463,7 +478,7 @@ B + D のハイブリッド
 - Firestore投入はブラウザ用投入ページで行う
 ```
 
-## 22. 元データ保存方針
+## 23. 元データ保存方針
 
 整形済みJSONはリポジトリに保存する。
 
@@ -472,16 +487,16 @@ B + D のハイブリッド
 data/country_masters.generated.json
 ```
 
-国名補正テーブルはオプションとし、初期V3では必須にしない。
+国名補正テーブルはオプションとし、初期実装では必須にしない。
 
 ```text
 補正テーブル:
 必要になったら追加する
 ```
 
-## 23. Firestore既存データへの影響
+## 24. Firestore既存データへの影響
 
-V3 Phase 3では、以下は変更しない。
+V3.2 / Phase 4 で `country_masters` を追加する場合も、以下は変更しない。
 
 ```text
 変更しない:
@@ -500,9 +515,9 @@ V3 Phase 3では、以下は変更しない。
 - country_masters/{countryId}
 ```
 
-## 24. 未決定事項
+## 25. 未決定事項
 
-本ドキュメント時点で、以下は実装前にさらに詳細化する。
+本ドキュメント時点で、以下は V3.2 / Phase 4 実装前にさらに詳細化する。
 
 ```text
 1. data/country_masters.generated.json の生成タイミング
@@ -512,9 +527,9 @@ V3 Phase 3では、以下は変更しない。
 5. generated JSON のレビュー観点
 ```
 
-## 25. 完了条件
+## 26. 完了条件
 
-country_masters 設計としては、以下を満たせば Phase 3D の投入準備に進める。
+country_masters 設計としては、以下を満たせば V3.2 / Phase 4 の投入準備に進める。
 
 ```text
 1. country_masters のスキーマが確定している
