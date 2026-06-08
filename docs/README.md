@@ -8,8 +8,9 @@
 
 | 項目 | 正本 |
 | --- | --- |
-| V2 Main アプリ | `index.html` |
-| V3検証版 | `v3/` |
+| V3.1 Main アプリ | `index.html` |
+| V3.1 Main 実行資産 | `v3/` |
+| V2 Main 退避版 | `archive/index_v2_main_before_v3_1.html` |
 | V3.1 / Phase 3 要求仕様 | `docs/v3_phase_3_requirements.md` |
 | V3.1 / Phase 3 完了報告 | `docs/v3_phase_3_completion_report.md` |
 | V3.1 main昇格判断 | `docs/v3_main_promotion_decision.md` |
@@ -28,14 +29,14 @@
 
 | ファイル | 役割 | 対象 | 最終更新 |
 | --- | --- | --- | --- |
-| `system_definition_v2.md` | V2 Main の仕様定義書。root `index.html` の仕様参照元です。 | V2 Main | 2026-06-04 |
-| `ui_ux_v2.md` | V2 Main の UI/UX、画面遷移、文言、図鑑・モーダル仕様を定義します。 | V2 Main | 2026-06-04 |
+| `system_definition_v2.md` | V2 Main の仕様定義書。V2退避版およびV2仕様参照用として維持します。 | V2 archive | 2026-06-04 |
+| `ui_ux_v2.md` | V2 Main の UI/UX、画面遷移、文言、図鑑・モーダル仕様を定義します。V2仕様参照用として維持します。 | V2 archive | 2026-06-04 |
 | `data_model_v1_v2.md` | V1.5 / V2 / マスターデータの Firestore データモデルを定義します。 | V1.5 / V2 | 2026-06-04 |
 | `migration_v1_to_v2.md` | V1.5 から V2 への移行仕様、および `ryoma` / `sara` の移行実施記録を整理します。 | 移行 | 2026-06-04 |
-| `release_and_canary.md` | V2 Main 昇格後の Main / Canary / archive / V3検証運用方針を定義します。 | 運用 | 2026-06-06 |
+| `release_and_canary.md` | V3.1 Main 昇格後の Main / Canary / archive / V3.1実行資産運用方針を定義します。 | 運用 | 2026-06-08 |
 | `current_inventory.md` | リポジトリ構成、主要HTML、Firestore、ドキュメントの位置づけを棚卸しします。 | 全体棚卸し | 2026-06-06 |
-| `development_workflow.md` | iPhone / ChatGPT / Codex Web / GitHub を使った開発ワークフローを定義します。 | 開発運用 | 2026-06-06 |
-| `review_checklist.md` | PR作成前・レビュー時・マージ前後のチェックリストです。 | レビュー | 2026-06-06 |
+| `development_workflow.md` | iPhone / ChatGPT / Codex Web / GitHub を使った開発ワークフローを定義します。 | 開発運用 | 2026-06-08 |
+| `review_checklist.md` | PR作成前・レビュー時・マージ前後のチェックリストです。 | レビュー | 2026-06-08 |
 | `refactoring_plan.md` | root `index.html` 分割・リファクタリングの基本方針を定義します。 | リファクタリング | 2026-06-06 |
 | `v2_canary_handoff.md` | V2 Canary 開発から Main 昇格完了までの引き継ぎ・完了メモです。 | V2 Canary | 2026-06-04 |
 | `system_definition_v1.5.md` | V1.5 退避版の仕様定義書です。`archive/index_v1_5.html` の参照用として維持します。 | V1.5 archive | 記載なし |
@@ -59,8 +60,9 @@
 
 | パス | 位置づけ |
 | --- | --- |
-| `index.html` | V2 Main 本番版です。通常ユーザー向けの正本です。 |
-| `v3/` | V3 開発・検証版です。GitHub Pagesでは `/pokemon-math/v3/` で確認します。 |
+| `index.html` | V3.1 Main アプリシェルです。通常URLで表示され、`./v3/css/app.css` と `./v3/js/main.js` を参照します。 |
+| `v3/` | V3.1 Main の CSS / JavaScript 実行資産です。直接変更すると通常URLに影響します。GitHub Pagesでは `/pokemon-math/v3/` でも比較確認できます。 |
+| `archive/index_v2_main_before_v3_1.html` | V3.1 main昇格前の V2 Main 退避版です。 |
 | `archive/index_v1_5.html` | V1.5 本番版の退避ファイルです。 |
 | `canary/index.html` | V2 Canary 開発・検証の履歴、および今後の検証用ファイルです。 |
 | `canary/migration.html` | V1.5→V2 移行に使用した運用者向けツールです。通常導線には出しません。 |
@@ -79,16 +81,26 @@
 | 2026-06-08 | V3.1 / Phase 3 を算数レベル5・6追加 + main昇格判断に縮小し、国旗クイズを V3.2 / Phase 4 に分離しました。 | `v3_phase_3_requirements.md`, `v3_country_master_design.md` |
 | 2026-06-08 | V3.1 / Phase 3 で算数レベル5・6を実装し、開発バージョン表示とレベル6の出題範囲を調整しました。 | `v3_phase_3_math_levels_design.md`, `v3_phase_3_completion_report.md` |
 | 2026-06-08 | V3.1 main昇格判断として、root昇格方式、V2 Main退避、rollback方針、昇格前後の確認観点を整理しました。 | `v3_main_promotion_decision.md` |
+| 2026-06-08 | V3.1を Main に昇格し、通常URLの実行資産を root `index.html` + `v3/` に切り替えました。 | `release_and_canary.md`, `v3_main_promotion_decision.md` |
 
 ## 6. 次に読むべきドキュメント
 
-### V2 Main の現行仕様を確認する場合
+### V3.1 Main の現行仕様を確認する場合
+
+```text
+1. docs/release_and_canary.md
+2. docs/v3_main_promotion_decision.md
+3. docs/v3_phase_3_completion_report.md
+4. docs/v3_phase_3_math_levels_design.md
+```
+
+### V2 Main 退避版・V2仕様を確認する場合
 
 ```text
 1. docs/system_definition_v2.md
 2. docs/ui_ux_v2.md
 3. docs/data_model_v1_v2.md
-4. docs/release_and_canary.md
+4. archive/index_v2_main_before_v3_1.html
 ```
 
 ### Firestore データ構造・移行経緯を確認する場合
@@ -99,32 +111,12 @@
 3. docs/v2_canary_handoff.md
 ```
 
-### V3 の現在地を確認する場合
-
-```text
-1. docs/v3_phase_3_completion_report.md
-2. docs/v3_main_promotion_decision.md
-3. docs/v3_phase_3_requirements.md
-4. docs/v3_phase_2_completion_report.md
-5. docs/v3_refactoring_plan.md
-```
-
 ### V3.1 / Phase 3 の完了内容を確認する場合
 
 ```text
 1. docs/v3_phase_3_completion_report.md
 2. docs/v3_phase_3_math_levels_design.md
 3. docs/v3_phase_3_requirements.md
-4. docs/review_checklist.md
-5. docs/development_workflow.md
-```
-
-### V3.1 の main昇格判断に進む場合
-
-```text
-1. docs/v3_main_promotion_decision.md
-2. docs/v3_phase_3_completion_report.md
-3. docs/release_and_canary.md
 4. docs/review_checklist.md
 5. docs/development_workflow.md
 ```
@@ -164,8 +156,10 @@
 ## 8. 注意事項
 
 ```text
-- root `index.html` は V2 Main の正本です。
-- `v3/` は検証領域です。root昇格は別PRで判断します。
+- root `index.html` は V3.1 Main アプリシェルです。
+- root `index.html` は `./v3/css/app.css` と `./v3/js/main.js` を参照します。
+- `v3/` は V3.1 Main の実行資産です。直接変更すると通常URLに影響します。
+- V4 / Phase 4 開発では、`v4/` を新設して進め、`v3/` を直接変更しません。
 - V3.1 / Phase 3 では、算数レベル5・6追加までを対象とします。
 - 国旗クイズと `country_masters` は V3.2 / Phase 4 の対象です。
 - V3.1 / Phase 3 では Firestore `users_v2` と `masters/gen_{1..9}` を変更しません。
