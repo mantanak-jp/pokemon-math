@@ -1,14 +1,28 @@
-export const DEV_BUILD = {
-  version: "v3-dev-0.5.0",
-  phase: "Phase 3 / V3.1 math levels",
-  updatedAt: "2026-06-08 19:00 JST"
+export const APP_VERSION = {
+  major: 3,
+  minor: 1,
+  patch: 0,
+  build: 0,
+  generatedAt: "202606071900"
 };
 
-export function formatDevBuildInfo(build = DEV_BUILD) {
-  return `V3 Dev ${build.version} / ${build.phase} / ${build.updatedAt}`;
+export function formatAppVersion(version = APP_VERSION) {
+  return `v${version.major}.${version.minor}.${version.patch}.${version.build}.${version.generatedAt}`;
+}
+
+export const DEV_BUILD = {
+  version: formatAppVersion(APP_VERSION),
+  phase: "V3.1 main",
+  updatedAt: APP_VERSION.generatedAt
+};
+
+export function formatDevBuildInfo() {
+  return formatAppVersion(APP_VERSION);
 }
 
 window.AppVersion = {
+  APP_VERSION,
   DEV_BUILD,
+  formatAppVersion,
   formatDevBuildInfo
 };
