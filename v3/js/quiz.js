@@ -55,15 +55,17 @@ export function makeKukuDivisionQuestion() {
 }
 
 export function makeTwoDigitDivisionQuestion() {
-  let answer;
-  let divisor;
-  let dividend;
-  do {
-    answer = randomInt(2, 12);
-    divisor = randomInt(2, 9);
-    dividend = answer * divisor;
-  } while (dividend < 10 || dividend > 99);
-  return { text: dividend + " ÷ " + divisor + " = ?", answer };
+  const candidates = [];
+  for (let answer = 10; answer <= 24; answer++) {
+    for (let divisor = 2; divisor <= 9; divisor++) {
+      const dividend = answer * divisor;
+      if (dividend >= 10 && dividend <= 99) {
+        candidates.push({ dividend, divisor, answer });
+      }
+    }
+  }
+  const question = candidates[randomInt(0, candidates.length - 1)];
+  return { text: question.dividend + " ÷ " + question.divisor + " = ?", answer: question.answer };
 }
 
 export function makeChoices(correctAnswer) {

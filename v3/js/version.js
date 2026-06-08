@@ -1,7 +1,7 @@
 export const DEV_BUILD = {
-  version: "v3-dev-0.4.2",
-  phase: "Phase 2C-3",
-  updatedAt: "2026-06-07 17:35 JST"
+  version: "v3-dev-0.5.0",
+  phase: "Phase 3 / V3.1 math levels",
+  updatedAt: "2026-06-08 19:00 JST"
 };
 
 export function formatDevBuildInfo(build = DEV_BUILD) {
