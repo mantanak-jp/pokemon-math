@@ -11,6 +11,7 @@
 | V2 Main アプリ | `index.html` |
 | V3検証版 | `v3/` |
 | V3.1 / Phase 3 要求仕様 | `docs/v3_phase_3_requirements.md` |
+| V3.1 / Phase 3 完了報告 | `docs/v3_phase_3_completion_report.md` |
 | V3.2 / Phase 4 国旗クイズ先行設計 | `docs/v3_country_master_design.md` |
 | V2 ユーザーデータ | Firestore `users_v2/{userId}` |
 | V2 ポケモンマスター | Firestore `masters/gen_{1..9}` |
@@ -48,6 +49,8 @@
 | `v3_phase_2c_compatibility_notes.md` | V3 Phase 2C 時点で残る `window.AppXXX` 互換層の扱いを整理します。 | V3 Phase 2C | 2026-06-07 |
 | `v3_phase_2_completion_report.md` | V3 Phase 2 の完了内容、実施PR、最終構成、残課題を整理します。 | V3 Phase 2完了 | 2026-06-07 |
 | `v3_phase_3_requirements.md` | V3.1 / Phase 3 の算数拡張要求仕様です。レベル5・6追加と main昇格判断条件を整理します。 | V3.1 / Phase 3 | 2026-06-08 |
+| `v3_phase_3_math_levels_design.md` | V3.1 / Phase 3 の算数レベル5・6実装設計です。 | V3.1 / Phase 3設計 | 2026-06-08 |
+| `v3_phase_3_completion_report.md` | V3.1 / Phase 3 の完了内容、実施PR、確認観点、残課題を整理します。 | V3.1 / Phase 3完了 | 2026-06-08 |
 | `v3_country_master_design.md` | V3.2 / Phase 4 の国旗クイズに向けた `country_masters` 先行設計です。 | V3.2 / Phase 4先行設計 | 2026-06-08 |
 
 ## 4. 現在の主要ファイルの位置づけ
@@ -72,6 +75,7 @@
 | 2026-06-07 | V3 Phase 3 の要求仕様を整理しました。当初は割り算・国旗クイズを同一フェーズで検討しました。 | `v3_phase_3_requirements.md` |
 | 2026-06-07 | 国旗クイズ用の `country_masters` 詳細設計を作成しました。 | `v3_country_master_design.md` |
 | 2026-06-08 | V3.1 / Phase 3 を算数レベル5・6追加 + main昇格判断に縮小し、国旗クイズを V3.2 / Phase 4 に分離しました。 | `v3_phase_3_requirements.md`, `v3_country_master_design.md` |
+| 2026-06-08 | V3.1 / Phase 3 で算数レベル5・6を実装し、開発バージョン表示とレベル6の出題範囲を調整しました。 | `v3_phase_3_math_levels_design.md`, `v3_phase_3_completion_report.md` |
 
 ## 6. 次に読むべきドキュメント
 
@@ -95,29 +99,38 @@
 ### V3 の現在地を確認する場合
 
 ```text
-1. docs/v3_phase_2_completion_report.md
+1. docs/v3_phase_3_completion_report.md
 2. docs/v3_phase_3_requirements.md
-3. docs/v3_phase_2c_compatibility_notes.md
-4. docs/v3_phase_2_design.md
+3. docs/v3_phase_2_completion_report.md
+4. docs/v3_phase_2c_compatibility_notes.md
 5. docs/v3_refactoring_plan.md
-6. docs/v3_handoff.md
 ```
 
-### V3.1 / Phase 3 の設計・実装に進む場合
+### V3.1 / Phase 3 の完了内容を確認する場合
 
 ```text
-1. docs/v3_phase_3_requirements.md
-2. docs/v3_phase_2_completion_report.md
-3. docs/v3_phase_2c_compatibility_notes.md
+1. docs/v3_phase_3_completion_report.md
+2. docs/v3_phase_3_math_levels_design.md
+3. docs/v3_phase_3_requirements.md
 4. docs/review_checklist.md
 5. docs/development_workflow.md
+```
+
+### V3.1 の main昇格判断に進む場合
+
+```text
+1. docs/v3_phase_3_completion_report.md
+2. docs/release_and_canary.md
+3. docs/review_checklist.md
+4. docs/development_workflow.md
+5. docs/v3_refactoring_plan.md
 ```
 
 ### V3.2 / Phase 4 の国旗クイズ設計に進む場合
 
 ```text
 1. docs/v3_country_master_design.md
-2. docs/v3_phase_3_requirements.md
+2. docs/v3_phase_3_completion_report.md
 3. docs/data_model_v1_v2.md
 4. docs/review_checklist.md
 5. docs/development_workflow.md
