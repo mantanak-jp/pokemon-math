@@ -30,6 +30,14 @@ export function makeQuestionForLevel(level) {
     n1 = randomInt(20, 69);
     n2 = randomInt(10, 49);
     if (Math.random() > 0.5 && n1 >= n2) op = "-";
+  } else if (level === 4) {
+    n1 = randomInt(1, 9);
+    n2 = randomInt(1, 9);
+    op = "×";
+  } else if (level === 5) {
+    return makeKukuDivisionQuestion();
+  } else if (level === 6) {
+    return makeTwoDigitDivisionQuestion();
   } else {
     n1 = randomInt(1, 9);
     n2 = randomInt(1, 9);
@@ -37,6 +45,25 @@ export function makeQuestionForLevel(level) {
   }
   const answer = op === "+" ? n1 + n2 : (op === "-" ? n1 - n2 : n1 * n2);
   return { text: n1 + " " + op + " " + n2 + " = ?", answer };
+}
+
+export function makeKukuDivisionQuestion() {
+  const answer = randomInt(1, 9);
+  const divisor = randomInt(1, 9);
+  const dividend = answer * divisor;
+  return { text: dividend + " ÷ " + divisor + " = ?", answer };
+}
+
+export function makeTwoDigitDivisionQuestion() {
+  let answer;
+  let divisor;
+  let dividend;
+  do {
+    answer = randomInt(2, 12);
+    divisor = randomInt(2, 9);
+    dividend = answer * divisor;
+  } while (dividend < 10 || dividend > 99);
+  return { text: dividend + " ÷ " + divisor + " = ?", answer };
 }
 
 export function makeChoices(correctAnswer) {
@@ -170,6 +197,8 @@ window.AppQuiz = {
   randomInt,
   shuffleArray,
   makeQuestionForLevel,
+  makeKukuDivisionQuestion,
+  makeTwoDigitDivisionQuestion,
   makeChoices,
   resetAnswerButtons,
   shouldShowGenerationStartForLevel,
