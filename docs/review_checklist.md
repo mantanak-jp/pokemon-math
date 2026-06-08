@@ -1,12 +1,12 @@
 # レビュー・チェックリスト
 
-最終更新: 2026-06-06
+最終更新: 2026-06-08
 
 ## 1. 目的
 
 この文書は、`pokemon-math` リポジトリにおける Pull Request 作成前・レビュー時・マージ前の確認項目を定義します。
 
-本プロジェクトでは、root `index.html` が V2 Main 本番版であり、Firestore 上の `users_v2` に実ユーザーデータが存在します。
+本プロジェクトでは、root `index.html` が V3.1 Main アプリシェルであり、`v3/` が V3.1 Main の CSS / JavaScript 実行資産です。また、Firestore 上の `users_v2` に実ユーザーデータが存在します。
 
 そのため、変更作業では以下を重視します。
 
@@ -28,7 +28,7 @@ B. UI / UX変更
 C. クイズ仕様変更
 D. 報酬仕様変更
 E. Firestore読み書き変更
-F. index.html / CSS / JS リファクタリング
+F. index.html / v3 / CSS / JS リファクタリング
 G. canary / migration / archive 関連変更
 H. その他
 ```
@@ -70,6 +70,7 @@ PR作成前に、以下を確認します。
 ```text
 - Markdownファイルのみが変更されている
 - index.html が変更されていない
+- v3/ が変更されていない
 - HTML / JavaScript / CSS が変更されていない
 - Firestoreデータに影響がない
 - GitHub Pages設定に影響がない
@@ -86,25 +87,27 @@ PR本文には、以下を明記します。
 - No GitHub Pages setting changes
 ```
 
-## 6. index.html 変更PRのチェック
+## 6. index.html / v3 変更PRのチェック
 
-root `index.html` は V2 Main 本番版です。
+root `index.html` は V3.1 Main アプリシェルです。root `index.html` は `./v3/css/app.css` と `./v3/js/main.js` を参照しているため、`v3/` も V3.1 Main の実行資産です。
 
-`index.html` を変更するPRでは、以下を必ず確認します。
+`index.html` または `v3/` を変更するPRでは、以下を必ず確認します。
 
 ```text
-- 本番V2 Mainへの影響が説明されている
+- V3.1 Mainへの影響が説明されている
 - 変更した画面・機能が説明されている
 - Firebase SDK読み込み順が壊れていない
 - Firestore読み書き先が変わっていない
 - users へ通常プレイ中に書き込まない
-- users_v2 をV2 Mainの正本として維持している
+- users_v2 を現行ユーザーデータの正本として維持している
 - masters/gen_{1..9} へ通常プレイ中に書き込まない
 - canary/migration.html への通常導線を追加していない
 - UI文言が意図せず変わっていない
 - 図鑑モーダル仕様が戻っていない
 - body.modal-open を復活させていない
 ```
+
+V4 / Phase 4 開発では、原則として `v4/` を新設し、V3.1 Main 実行資産である `v3/` を直接変更しません。
 
 ## 7. Firestore関連チェック
 
@@ -121,7 +124,7 @@ Firestore読み書きに関わるPRでは、以下を確認します。
 - createdAt / updatedAt / migratedAt / migrated_from_v1 の扱いが仕様と矛盾していないか
 ```
 
-V2 Main通常プレイで許可されるFirestore利用は以下です。
+現行アプリの通常プレイで許可されるFirestore利用は以下です。
 
 ```text
 読み取り:
@@ -162,8 +165,8 @@ V2 Main通常プレイで許可されるFirestore利用は以下です。
 - 4問正解で1匹取得の仕様を維持しているか
 - 5問正解で2匹取得の仕様を維持しているか
 - 3問以下ではポケモン取得しない仕様を維持しているか
-- レベル1〜4の既存仕様を壊していないか
-- 新レベル追加時に既存レベルへ影響していないか
+- レベル1〜6の既存仕様を壊していないか
+- 新レベル・新クイズ種別追加時に既存レベルへ影響していないか
 - 選択肢生成で重複や不正な値が出ないか
 ```
 
@@ -173,6 +176,7 @@ V2 Main通常プレイで許可されるFirestore利用は以下です。
 - docs/system_definition_v2.md
 - docs/ui_ux_v2.md
 - docs/refactoring_plan.md
+- V3 / V4 関連の要求仕様・設計ドキュメント
 ```
 
 ## 10. 報酬仕様チェック
@@ -196,6 +200,7 @@ V2 Main通常プレイで許可されるFirestore利用は以下です。
 - docs/system_definition_v2.md
 - docs/ui_ux_v2.md
 - docs/refactoring_plan.md
+- V3 / V4 関連の要求仕様・設計ドキュメント
 ```
 
 ## 11. 図鑑・モーダルチェック
@@ -251,8 +256,10 @@ UI / UXに関わるPRでは、以下を確認します。
 - root index.html に移行UIを混ぜていないか
 - canary/index.html に移行ボタンを追加していないか
 - archive/index_v1_5.html を不用意に変更していないか
+- archive/index_v2_main_before_v3_1.html を不用意に変更していないか
 - V1.5退避版の位置づけを変えていないか
 - V2 Canaryの検証用位置づけを変えていないか
+- V2 Main退避版の位置づけを変えていないか
 ```
 
 ## 14. CSS / JS外出し Phase 1A チェック
