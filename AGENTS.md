@@ -4,20 +4,29 @@
 
 - このリポジトリは、子ども向けのポケモン算数学習アプリです。
 - 現在の本番アプリは、リポジトリルートの `index.html` です。
-- `index.html` は V2 Main 本番版です。
+- `index.html` は V3.1 Main 本番版のアプリシェルです。
+- `v3/` は V3.1 Main の CSS / JavaScript 実行資産です。
+- V2 Main 本番版は `archive/index_v2_main_before_v3_1.html` に退避済みです。
 - V1.5 本番版は `archive/index_v1_5.html` に退避済みです。
 - `canary/` 配下は、V2 Canary 開発・検証の履歴、および今後の検証用として扱います。
+- `v4/` は今後の V4 開発領域として、明示されたタスク範囲内で作成・変更できます。
 - 既存アプリと既存データを壊さないことを最優先にします。
 - 実装前に、関連する `docs/` 配下の仕様書・棚卸し文書を確認してください。
+- Codex app の詳細な初期運用ルールは `docs/codex_app_guardrails.md` を参照してください。
 
 ## 2. 変更禁止・注意ルール
 
 - 明示的な Issue と承認がない限り、ルートの `index.html` を不用意に変更しないでください。
-- `index.html` を変更する場合は、本番 V2 Main への影響を PR 本文に明記してください。
+- 明示的な Issue と承認がない限り、`v3/` を不用意に変更しないでください。
+- `index.html` または `v3/` を変更する場合は、現行 V3.1 Main への影響を PR 本文に明記してください。
 - V2 Main から Firestore の `users` コレクションへ書き込みコードを追加・変更しないでください。
 - Firebase 設定を不用意に変更しないでください。
 - 既存の `users_v2` データ構造を破壊しないでください。
 - 通常ユーザー・子ども向け導線に `canary/migration.html` へのリンクを置かないでください。
+- commit は、ユーザーが「commitまでOK」と明示した場合のみ行ってください。
+- push と PR 作成は、ユーザーが明示指示した場合のみ行ってください。
+- main への直接 push は禁止します。
+- merge は必ずユーザー判断とし、Codex app は明示指示なしに merge しないでください。
 
 ## 3. V2 Main / Canary 開発ルール
 
