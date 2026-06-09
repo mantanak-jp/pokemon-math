@@ -1,6 +1,6 @@
 # docs
 
-最終更新: 2026-06-08
+最終更新: 2026-06-09
 
 このディレクトリは、ポケモンさんすうアプリの仕様・設計・運用ルール・引き継ぎ情報を管理する場所です。
 
@@ -35,7 +35,8 @@
 | `migration_v1_to_v2.md` | V1.5 から V2 への移行仕様、および `ryoma` / `sara` の移行実施記録を整理します。 | 移行 | 2026-06-04 |
 | `release_and_canary.md` | V3.1 Main 昇格後の Main / Canary / archive / V3.1実行資産運用方針を定義します。 | 運用 | 2026-06-08 |
 | `current_inventory.md` | リポジトリ構成、主要HTML、Firestore、ドキュメントの位置づけを棚卸しします。 | 全体棚卸し | 2026-06-06 |
-| `development_workflow.md` | iPhone / ChatGPT / Codex Web / GitHub を使った開発ワークフローを定義します。 | 開発運用 | 2026-06-08 |
+| `development_workflow.md` | iPhone / ChatGPT / Codex app / GitHub を使った開発ワークフローを定義します。 | 開発運用 | 2026-06-08 |
+| `codex_app_guardrails.md` | Codex app を安全に使うための初期運用ガードレールを定義します。 | Codex app運用 | 2026-06-09 |
 | `review_checklist.md` | PR作成前・レビュー時・マージ前後のチェックリストです。 | レビュー | 2026-06-08 |
 | `refactoring_plan.md` | root `index.html` 分割・リファクタリングの基本方針を定義します。 | リファクタリング | 2026-06-06 |
 | `v2_canary_handoff.md` | V2 Canary 開発から Main 昇格完了までの引き継ぎ・完了メモです。 | V2 Canary | 2026-06-04 |
@@ -135,8 +136,9 @@
 
 ```text
 1. docs/development_workflow.md
-2. docs/review_checklist.md
-3. docs/release_and_canary.md
+2. docs/codex_app_guardrails.md
+3. docs/review_checklist.md
+4. docs/release_and_canary.md
 ```
 
 ## 7. ドキュメント更新タイミング
