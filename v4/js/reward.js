@@ -26,6 +26,19 @@ export function getRewardCount(score) {
   return 0;
 }
 
+export function getFlagRewardCount(score) {
+  if (score >= 4) return 2;
+  if (score >= 2) return 1;
+  return 0;
+}
+
+export function getFlagRewardPlaceholderMessage(score) {
+  if (score >= 2) {
+    return "ポケモンを ゲットしているよ...";
+  }
+  return "おしい！ 2もん せいかいで ポケモンを ゲット！";
+}
+
 export function getLevelPoolLimit(level, pokemonList) {
   const maxLocalId = pokemonList.reduce(function(maxValue, pokemon) {
     return Math.max(maxValue, pokemon.local_id);
@@ -56,7 +69,7 @@ export function selectRewardPokemon(pokemonList, ownedIds, rewardCount, level) {
   return shuffleArray(candidates).slice(0, rewardCount);
 }
 
-export async function prepareRewardState(rewardCount) {
+export async function prepareRewardState(rewardCount, rewardLevel = state.selectedLevel) {
   if (!state.currentUserData || state.currentUserData.cleared_generations === 9 || rewardCount <= 0) {
     state.pendingRewardPokemon = [];
     state.pendingRewardPokemonList = [];
@@ -65,7 +78,7 @@ export async function prepareRewardState(rewardCount) {
 
   const pokemonList = await getCurrentGenerationMaster(state.currentUserData);
   const uniqueOwnedIds = Array.from(new Set(state.currentUserData.current_gen_owned));
-  const selectedPokemon = selectRewardPokemon(pokemonList, uniqueOwnedIds, rewardCount, state.selectedLevel);
+  const selectedPokemon = selectRewardPokemon(pokemonList, uniqueOwnedIds, rewardCount, rewardLevel);
 
   state.pendingRewardPokemonList = pokemonList;
   state.pendingRewardPokemon = selectedPokemon;
@@ -139,7 +152,7 @@ export function renderRewardSuccess(saveResult) {
   if (caughtPokemon.length > 0) {
     dom.resultMessage.textContent = formatPokemonNames(caughtPokemon) + "を ゲット！";
   } else if (saveResult.status === "already_all_completed") {
-    dom.resultMessage.textContent = "もう ぜんぶ ゲットしているよ！\nさんすうは つづけられるよ！";
+    dom.resultMessage.textContent = "もう ぜんぶ ゲットしているよ！\nクイズは つづけられるよ！";
   } else {
     dom.resultMessage.textContent = "このポケモンは ゲットずみです。";
   }
@@ -175,7 +188,7 @@ export function renderAllCompleteQuizResult() {
   resetResultProgressActions();
   dom.resultSaveStatus.className = "result-save-status success";
   dom.resultSaveStatus.textContent = "";
-  dom.resultMessage.textContent = "もう ぜんぶ ゲットしているよ！\nさんすうは つづけられるよ！";
+  dom.resultMessage.textContent = "もう ぜんぶ ゲットしているよ！\nクイズは つづけられるよ！";
   setResultActionDisabled(false);
 }
 
@@ -200,6 +213,18 @@ export function renderNoRewardResult(score) {
   dom.resultSaveStatus.textContent = "";
   resetResultProgressActions();
   dom.resultMessage.textContent = getRewardPlaceholderMessage(score);
+  setResultActionDisabled(false);
+}
+
+export function renderNoFlagRewardResult(score) {
+  renderRewardImages([]);
+  dom.retryRewardButton.classList.add("hidden");
+  dom.retryRewardButton.disabled = true;
+  dom.resultSaveStatus.className = "result-save-status";
+  dom.resultSaveStatus.textContent = "";
+  resetResultProgressActions();
+  dom.resultRetryButton.textContent = "こっきクイズを もういちど";
+  dom.resultMessage.textContent = getFlagRewardPlaceholderMessage(score);
   setResultActionDisabled(false);
 }
 
@@ -278,9 +303,54 @@ export async function showResult() {
   }
 }
 
+export async function showFlagRewardResult() {
+  dom.quizProgress.style.width = "100%";
+  dom.resultScore.textContent = QUIZ_QUESTION_COUNT + "もん中 " + state.correctCount + "もん せいかい！";
+  dom.resultMessage.textContent = "";
+  dom.resultSaveStatus.className = "result-save-status";
+  dom.resultSaveStatus.textContent = "";
+  dom.retryRewardButton.classList.add("hidden");
+  dom.retryRewardButton.disabled = true;
+  resetResultProgressActions();
+  renderRewardImages([]);
+  dom.resultRetryButton.textContent = "こっきクイズを もういちど";
+  setResultActionDisabled(false);
+  showScreen("result");
+
+  const rewardCount = getFlagRewardCount(state.correctCount);
+  if (state.currentUserData && state.currentUserData.cleared_generations === 9 && rewardCount > 0) {
+    renderAllCompleteQuizResult();
+    dom.resultRetryButton.textContent = "こっきクイズを もういちど";
+    return;
+  }
+  if (rewardCount <= 0) {
+    renderNoFlagRewardResult(state.correctCount);
+    return;
+  }
+
+  renderRewardSaving();
+
+  try {
+    const selectedPokemon = await prepareRewardState(rewardCount, 6);
+    if (selectedPokemon.length === 0) {
+      state.isSavingReward = false;
+      renderNoAvailableReward();
+      dom.resultRetryButton.textContent = "こっきクイズを もういちど";
+      return;
+    }
+    state.isSavingReward = false;
+    await handleRewardSave();
+    dom.resultRetryButton.textContent = "こっきクイズを もういちど";
+  } catch (error) {
+    renderRewardFailure();
+  }
+}
+
 window.AppReward = {
   getRewardPlaceholderMessage,
   getRewardCount,
+  getFlagRewardCount,
+  getFlagRewardPlaceholderMessage,
   getLevelPoolLimit,
   selectRewardPokemon,
   prepareRewardState,
@@ -291,8 +361,10 @@ window.AppReward = {
   renderAllCompleteQuizResult,
   renderRewardFailure,
   renderNoRewardResult,
+  renderNoFlagRewardResult,
   renderNoAvailableReward,
   calculateGenerationComplete,
   handleRewardSave,
-  showResult
+  showResult,
+  showFlagRewardResult
 };

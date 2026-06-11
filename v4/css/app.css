@@ -242,8 +242,26 @@ button:disabled { cursor: not-allowed; filter: grayscale(0.25); opacity: 0.65; t
 }
 
 .quiz-type-button {
-  min-height: 64px;
-  font-size: 1.12rem;
+  display: grid;
+  gap: 8px;
+  place-items: center;
+  min-height: 124px;
+  padding: 20px 16px;
+  font-size: 1rem;
+  line-height: 1.35;
+}
+
+.quiz-type-title {
+  display: block;
+  font-size: 1.22rem;
+  font-weight: 900;
+}
+
+.quiz-type-reward {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 800;
+  line-height: 1.45;
 }
 
 .flag-quiz-button {
@@ -315,6 +333,13 @@ button:disabled { cursor: not-allowed; filter: grayscale(0.25); opacity: 0.65; t
   font-weight: 900;
   line-height: 1.2;
   text-align: center;
+}
+
+.question-text.flag-question-text {
+  margin: 8px 0 8px;
+  padding: 12px 10px;
+  font-size: clamp(1.28rem, 5vw, 1.65rem);
+  line-height: 1.35;
 }
 
 .flag-quiz-image-wrap {
@@ -792,6 +817,10 @@ button:disabled { cursor: not-allowed; filter: grayscale(0.25); opacity: 0.65; t
   .starter-card img { max-width: 78px; }
   .progress-strip { font-size: 0.95rem; }
   .level-button { font-size: 0.98rem; }
+  .quiz-type-button { min-height: 112px; padding: 18px 12px; }
+  .quiz-type-title { font-size: 1.12rem; }
+  .quiz-type-reward { font-size: 0.82rem; }
+  .question-text.flag-question-text { font-size: 1.22rem; }
   .answer-button { min-height: 64px; }
   .quiz-alert { font-size: 1.2rem; }
   .reward-card { width: min(48%, 132px); }

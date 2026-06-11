@@ -9,15 +9,16 @@ import {
   getGenerationText,
   hasShownGenerationStart,
   showGenerationStart,
-  resetResultProgressActions,
-  setResultActionDisabled,
   showScreen
 } from "./ui.js";
 import {
   getEnabledCountryMasters,
   prefetchCurrentGenerationMaster
 } from "./firestore.js";
-import { showResult } from "./reward.js";
+import {
+  showFlagRewardResult,
+  showResult
+} from "./reward.js";
 
 export function makeQuestionForLevel(level) {
   let n1;
@@ -146,6 +147,7 @@ export function startQuiz(level) {
   dom.quizAlert.textContent = "";
   dom.quizAlert.className = "quiz-alert";
   dom.answerGrid.classList.remove("flag-choices");
+  dom.quizQuestion.classList.remove("flag-question-text");
   dom.flagQuizImageWrap.classList.add("hidden");
   dom.flagQuizImage.removeAttribute("src");
   dom.flagQuizImage.alt = "";
@@ -187,6 +189,7 @@ export async function startFlagQuiz() {
   dom.quizAlert.className = "quiz-alert";
   dom.quizQuestion.textContent = "こっきを よみこみ中...";
   dom.answerGrid.classList.add("flag-choices");
+  dom.quizQuestion.classList.add("flag-question-text");
   dom.flagQuizImageWrap.classList.add("hidden");
   resetAnswerButtons();
   dom.answerButtons.forEach(function(button) {
@@ -244,6 +247,7 @@ export function makeNextQuestion() {
   state.isAnswered = false;
   resetAnswerButtons();
   dom.answerGrid.classList.remove("flag-choices");
+  dom.quizQuestion.classList.remove("flag-question-text");
   dom.flagQuizImageWrap.classList.add("hidden");
   dom.flagQuizImage.removeAttribute("src");
   dom.flagQuizImage.alt = "";
@@ -266,6 +270,7 @@ export function makeNextFlagQuestion() {
   state.isAnswered = false;
   resetAnswerButtons();
   dom.answerGrid.classList.add("flag-choices");
+  dom.quizQuestion.classList.add("flag-question-text");
   dom.quizAlert.textContent = "";
   dom.quizAlert.className = "quiz-alert";
   state.currentQuestionIndex += 1;
@@ -342,28 +347,12 @@ export function answerQuestion(button) {
       }
     } else {
       if (state.quizType === "flag") {
-        showFlagResult();
+        showFlagRewardResult();
       } else {
         showResult();
       }
     }
   }, QUIZ_NEXT_DELAY_MS);
-}
-
-export function showFlagResult() {
-  dom.quizProgress.style.width = "100%";
-  dom.resultScore.textContent = QUIZ_QUESTION_COUNT + "もん中 " + state.correctCount + "もん せいかい！";
-  dom.resultMessage.textContent = "こっきクイズの けっかです。\nポケモンの ごほうびは つぎのステップで つなぎます。";
-  dom.resultSaveStatus.className = "result-save-status";
-  dom.resultSaveStatus.textContent = "Firestoreへの ほぞんは していません。";
-  dom.retryRewardButton.classList.add("hidden");
-  dom.retryRewardButton.disabled = true;
-  dom.resultRewardImages.innerHTML = "";
-  dom.resultRewardImages.classList.add("hidden");
-  resetResultProgressActions();
-  dom.resultRetryButton.textContent = "こっきクイズを もういちど";
-  setResultActionDisabled(false);
-  showScreen("result");
 }
 
 window.AppQuiz = {
@@ -381,6 +370,5 @@ window.AppQuiz = {
   makeFlagQuestions,
   makeNextQuestion,
   makeNextFlagQuestion,
-  showFlagResult,
   answerQuestion
 };
