@@ -23,6 +23,7 @@ import {
 } from "./quiz.js";
 import {
   handleRewardSave,
+  showFlagRewardResult,
   showResult
 } from "./reward.js";
 import {
@@ -148,6 +149,8 @@ export function setupEvents() {
     if (state.isSavingReward) return;
     if (state.pendingRewardPokemon.length > 0) {
       handleRewardSave();
+    } else if (state.quizType === "flag") {
+      showFlagRewardResult();
     } else {
       showResult();
     }

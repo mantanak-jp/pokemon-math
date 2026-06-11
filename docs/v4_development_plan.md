@@ -107,8 +107,8 @@ Step 6: country_masters.generated.json 作成 ← 完了
 Step 7: Firestore投入ツール作成 ← 完了
 Step 8-A: Firestore投入機能の追加 ← 完了
 Step 8-B: Firestore country_masters 投入・確認 ← 完了
-Step 9-A: V4国旗クイズの最小実装 ← 今回
-Step 9-B: 報酬接続・結果画面調整・実機確認調整
+Step 9-A: V4国旗クイズの最小実装 ← 完了
+Step 9-B: 報酬接続・実機確認UI調整 ← 今回
 Step 10: V4実機確認・安定化
 Step 11: V4 Phase 4完了報告
 Step 12: Main昇格判断
@@ -167,7 +167,9 @@ Firestore を扱う PR では、読み取り先・書き込み先・既存デー
 
 Step 7 の `tools/import_country_masters.html` は投入前確認専用です。Step 8-A で安全条件付きの投入機能を追加し、Firestore実データへの投入は Step 8-B の明示承認後に行います。
 
-Step 9-A では、V4 runtime に国旗クイズの最小導線、Firestore `country_masters` 読み取り、5問4択の出題・判定・簡易結果表示を追加します。報酬接続と最終調整は Step 9-B で行います。
+Step 9-A では、V4 runtime に国旗クイズの最小導線、Firestore `country_masters` 読み取り、5問4択の出題・判定・簡易結果表示を追加しました。
+
+Step 9-B では、iPhone実機確認で見つかった国旗クイズ問題文サイズとクイズ選択ボタン表示を調整し、国旗クイズ結果を既存のポケモン報酬保存フローへ接続します。算数クイズの報酬条件は変更せず、国旗クイズのみ 2〜3問正解で1匹、4〜5問正解で2匹とします。
 
 ## 10. 未確定事項
 
