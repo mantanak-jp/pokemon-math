@@ -8,6 +8,8 @@
 
 Step 7 時点では、`data/country_masters.generated.json` を読み込み、件数・サンプル・`enabled=false` 一覧・スキーマ検証結果を表示します。
 
-Firestore には書き込みません。Firestore SDK、Firebase config、実投入処理は含めません。
+Step 8-A では、Firestore `country_masters` へ投入するための機能を追加します。ただし、実投入は行いません。
 
-Step 8 で投入機能または投入手順を追加・実行する場合は、誤操作防止のため、チェックボックスや確認文入力などの安全策を設け、明示承認後のみ実データ操作を行います。
+投入ボタンは、JSON検証成功、件数一致、`enabled=false` が `eu` / `un` であること、確認チェック、確認テキスト `IMPORT country_masters` の完全一致を満たした場合だけ有効になります。クリック時には最終確認ダイアログを表示します。
+
+Firestore 実データ操作は Step 8-B の明示承認後のみ行います。
