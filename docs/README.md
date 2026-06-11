@@ -10,6 +10,7 @@
 | --- | --- |
 | V3.1 Main アプリ | `index.html` |
 | V3.1 Main 実行資産 | `v3/` |
+| V4 開発確認用ディレクトリ | `v4/` |
 | V2 Main 退避版 | `archive/index_v2_main_before_v3_1.html` |
 | V3.1 / Phase 3 要求仕様 | `docs/v3_phase_3_requirements.md` |
 | V3.1 / Phase 3 完了報告 | `docs/v3_phase_3_completion_report.md` |
@@ -61,7 +62,7 @@
 | `v3_phase_3_completion_report.md` | V3.1 / Phase 3 の完了内容、実施PR、確認観点、残課題を整理します。 | V3.1 / Phase 3完了 | 2026-06-08 |
 | `v3_main_promotion_decision.md` | V3.1を root `index.html` に昇格するための判断材料、退避方針、rollback方針を整理します。 | V3.1 main昇格判断 | 2026-06-08 |
 | `v3_country_master_design.md` | V3.2 / Phase 4 の国旗クイズに向けた `country_masters` 先行設計です。 | V3.2 / Phase 4先行設計 | 2026-06-08 |
-| `v4_development_plan.md` | V3.2 / Phase 4 として整理していた国旗クイズ構想を、V4 開発計画として進めるための全体計画です。 | V4計画 | 2026-06-10 |
+| `v4_development_plan.md` | V3.2 / Phase 4 として整理していた国旗クイズ構想を、V4 開発計画として進めるための全体計画です。 | V4計画 | 2026-06-11 |
 
 ## 4. 現在の主要ファイルの位置づけ
 
@@ -69,6 +70,7 @@
 | --- | --- |
 | `index.html` | V3.1 Main アプリシェルです。通常URLで表示され、`./v3/css/app.css` と `./v3/js/main.js` を参照します。 |
 | `v3/` | V3.1 Main の CSS / JavaScript 実行資産です。直接変更すると通常URLに影響します。GitHub Pagesでは `/pokemon-math/v3/` でも比較確認できます。 |
+| `v4/` | V4 開発確認用ディレクトリです。V3.1 Main 実行資産をベースに新設し、GitHub Pagesでは merge 後に `/pokemon-math/v4/` で確認します。 |
 | `archive/index_v2_main_before_v3_1.html` | V3.1 main昇格前の V2 Main 退避版です。 |
 | `archive/index_v1_5.html` | V1.5 本番版の退避ファイルです。 |
 | `canary/index.html` | V2 Canary 開発・検証の履歴、および今後の検証用ファイルです。 |
@@ -89,6 +91,7 @@
 | 2026-06-08 | V3.1 / Phase 3 で算数レベル5・6を実装し、開発バージョン表示とレベル6の出題範囲を調整しました。 | `v3_phase_3_math_levels_design.md`, `v3_phase_3_completion_report.md` |
 | 2026-06-08 | V3.1 main昇格判断として、root昇格方式、V2 Main退避、rollback方針、昇格前後の確認観点を整理しました。 | `v3_main_promotion_decision.md` |
 | 2026-06-08 | V3.1を Main に昇格し、通常URLの実行資産を root `index.html` + `v3/` に切り替えました。 | `release_and_canary.md`, `v3_main_promotion_decision.md` |
+| 2026-06-11 | V4 初期ディレクトリとして `v4/` を新設し、V3.1 Main 実行資産をベースにした独立確認用構成を作成しました。 | `docs/v4_development_plan.md`, `docs/release_and_canary.md` |
 
 ## 6. 次に読むべきドキュメント
 

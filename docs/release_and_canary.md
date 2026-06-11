@@ -1,6 +1,6 @@
 # Release and Canary 方針
 
-最終更新: 2026-06-08
+最終更新: 2026-06-11
 
 ## 1. 目的
 
@@ -12,7 +12,7 @@
 - V3.1 main昇格後、root `index.html` は V3.1 アプリシェルになります。
 - V3.1 main昇格では、root `index.html` が `v3/css/app.css` と `v3/js/main.js` を参照します。
 - `v3/` は V3.1 Main の実行資産として当面維持します。
-- V3.2 / Phase 4 の国旗クイズ開発では、既存の `v3/` を直接壊さないよう、別ディレクトリまたは別方針を検討します。
+- V4 開発では、既存の `v3/` を直接壊さないよう、`v4/` を開発確認用ディレクトリとして使用します。
 - V2 Main 本番版は `archive/index_v2_main_before_v3_1.html` に退避済みです。
 - V1.5本番版は `archive/index_v1_5.html` に退避済みです。
 - `canary/index.html` は V2 Canary 開発・検証の履歴、および今後の検証用ファイルとして残します。
@@ -26,6 +26,7 @@
 | --- | --- |
 | `/index.html` | Main 本番版。V3.1 main昇格後は V3.1 アプリシェルです。 |
 | `/v3/` | V3.1 Main の CSS / JavaScript 実行資産、および比較確認用です。 |
+| `/v4/` | V4 開発確認用ディレクトリです。V3.1 Main 実行資産をベースにした独立構成として扱います。 |
 | `/archive/index_v2_main_before_v3_1.html` | V3.1 main昇格前の V2 Main 退避版です。 |
 | `/archive/index_v1_5.html` | V1.5退避版です。 |
 | `/canary/index.html` | V2 Canary履歴・検証用です。 |
@@ -94,8 +95,9 @@ root `index.html` は以下を参照します。
 
 ```text
 注意:
-- V3.2 / Phase 4 の開発で v3/ を直接変更すると Main に影響する可能性があります。
-- 国旗クイズなど次期開発では、別ディレクトリまたは明確な検証方針を先に決めます。
+- V4 開発で v3/ を直接変更すると Main に影響する可能性があります。
+- 国旗クイズなど次期開発は、`v4/` で検証してから PR 単位で進めます。
+- GitHub Pages の `/v4/` iPhone確認は、通常は対象 PR の merge 後に行います。
 ```
 
 ## 7. rollback 方針

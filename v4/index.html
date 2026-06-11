@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>ポケモンさんすう</title>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+  <link rel="stylesheet" href="./css/app.css">
+</head>
+<body>
+  <div class="app" id="app-shell">
+    <header class="app-header">
+      <h1 class="title">ポケモンさんすう</h1>      <p class="subtitle">世代を すすめる あたらしい ぼうけん</p>
+    </header>
+
+    <main>
+      <section id="screen-title" class="screen active" aria-labelledby="title-heading">
+        <div class="panel hero-panel center">
+          <h2 id="title-heading">ポケモンを ゲットしに いこう！</h2>
+
+          <div class="starter-row" aria-label="パルデアのポケモン">
+            <figure class="starter-card"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/906.png" alt="ニャオハ" loading="lazy" onerror="this.closest('.starter-card').classList.add('image-error');" /></figure>
+            <figure class="starter-card"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/909.png" alt="ホゲータ" loading="lazy" onerror="this.closest('.starter-card').classList.add('image-error');" /></figure>
+            <figure class="starter-card"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/912.png" alt="クワッス" loading="lazy" onerror="this.closest('.starter-card').classList.add('image-error');" /></figure>
+          </div>
+
+          <div id="firebase-status" class="notice info" aria-hidden="true"></div>
+        </div>
+
+        <div class="button-stack">
+          <button id="start-button" type="button" disabled>はじめる</button>
+        </div>
+      </section>
+
+      <section id="screen-user" class="screen" aria-labelledby="user-heading">
+        <div class="panel hero-panel center">
+          <div class="starter-row compact" aria-label="パルデアのポケモン">
+            <figure class="starter-card"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/906.png" alt="ニャオハ" loading="lazy" onerror="this.closest('.starter-card').classList.add('image-error');" /></figure>
+            <figure class="starter-card"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/909.png" alt="ホゲータ" loading="lazy" onerror="this.closest('.starter-card').classList.add('image-error');" /></figure>
+            <figure class="starter-card"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/912.png" alt="クワッス" loading="lazy" onerror="this.closest('.starter-card').classList.add('image-error');" /></figure>
+          </div>
+
+          <h2 id="user-heading">だれで あそぶ？</h2>
+          <p class="lead">ぼうけんする ユーザーを えらんでね。</p>
+        </div>
+
+        <div class="button-stack">
+          <button type="button" data-user-id="ryoma">りょうま</button>
+          <button type="button" data-user-id="sara">さら</button>
+          <button type="button" data-user-id="guest">ゲスト</button>
+        </div>
+
+        <button id="user-back-button" class="ghost-button" type="button">タイトルへ もどる</button>
+      </section>
+
+      <section id="screen-loading" class="screen" aria-live="polite" aria-labelledby="loading-heading">
+        <div class="panel center">
+          <div class="loader" aria-hidden="true"></div>
+          <h2 id="loading-heading">よみこみ中...</h2>
+          <p id="loading-main-message">データを よみこんでいます。</p>
+          <p id="loading-user-name" class="small"></p>
+        </div>
+      </section>
+
+      <section id="screen-menu" class="screen menu-screen" aria-labelledby="menu-heading">
+        <div class="menu-header">
+          <h2 id="menu-heading" class="menu-title">✨ <span id="menu-display-name">---</span> の メニュー ✨</h2>
+          <div id="menu-progress" class="progress-strip" aria-live="polite">---</div>
+          <div id="placeholder-message" class="notice info hidden" role="status"></div>
+        </div>
+
+        <div class="level-stack" aria-label="さんすうの レベル">
+          <button class="level-button" type="button" data-level="1">レベル 1（1けたの たし・ひき）</button>
+          <button class="level-button" type="button" data-level="2">レベル 2（2けた と 1けた）</button>
+          <button class="level-button" type="button" data-level="3">レベル 3（2けたの たし・ひき）</button>
+          <button class="level-button" type="button" data-level="4">レベル 4（かけざん 九九）</button>
+          <button class="level-button" type="button" data-level="5">レベル 5（九九の わり算）</button>
+          <button class="level-button" type="button" data-level="6">レベル 6（2けた ÷ 1けた）</button>
+        </div>
+
+        <div class="sub-action-stack">
+          <button id="open-zukan-button" class="zukan-button" type="button">📕 ずかんを みる</button>
+          <button id="change-user-button" class="ghost-button" type="button">👤 ユーザーを かえる</button>
+        </div>
+      </section>
+
+      <section id="screen-quiz" class="screen quiz-screen" aria-labelledby="quiz-question">
+        <div class="quiz-generation" id="quiz-generation">---</div>
+        <div class="quiz-status">
+          <div id="quiz-count">だい 1 もん</div>
+          <div id="quiz-score">せいかい: 0</div>
+        </div>
+        <div class="quiz-progress-bar" aria-hidden="true"><div id="quiz-progress" class="quiz-progress-fill"></div></div>
+        <div id="quiz-question" class="question-text">? + ? = ?</div>
+        <div id="quiz-alert" class="quiz-alert" aria-live="polite"></div>
+        <div class="answer-grid" aria-label="こたえを えらぶ">
+          <button class="answer-button" type="button" data-choice-index="0">?</button>
+          <button class="answer-button" type="button" data-choice-index="1">?</button>
+          <button class="answer-button" type="button" data-choice-index="2">?</button>
+          <button class="answer-button" type="button" data-choice-index="3">?</button>
+        </div>
+      </section>
+
+      <section id="screen-result" class="screen result-screen" aria-labelledby="result-heading">
+        <div class="panel hero-panel center">
+          <h2 id="result-heading">あそびおわったよ！</h2>
+          <div id="result-score" class="result-score">5もん中 0もん せいかい！</div>
+          <div id="result-reward-images" class="reward-images hidden" aria-live="polite"></div>
+          <p id="result-message" class="result-message"></p>
+          <p id="result-save-status" class="result-save-status"></p>
+          <button id="retry-reward-button" class="secondary-button retry-reward-button hidden" type="button">もういちどゲットする</button>
+        </div>
+        <div class="button-stack">
+          <button id="result-clear-button" class="hidden" type="button">第1世代クリア！</button>
+          <button id="result-complete-button" class="hidden" type="button">コンプリートを みる！</button>
+          <button id="result-retry-button" type="button">同じレベルでつづける</button>
+          <button id="result-zukan-button" class="zukan-button" type="button">ずかんをみる</button>
+          <button id="result-menu-button" class="ghost-button" type="button">メニューへもどる</button>
+        </div>
+      </section>
+
+      <section id="screen-generation-start" class="screen" aria-labelledby="generation-start-title">
+        <div class="panel celebration-panel">
+          <h2 id="generation-start-title" class="celebration-title">---</h2>
+          <p id="generation-start-message" class="celebration-message">---</p>
+        </div>
+        <div class="button-stack">
+          <button id="generation-start-button" type="button">このレベルで はじめる</button>
+          <button id="generation-start-menu-button" class="ghost-button" type="button">メニューへ もどる</button>
+        </div>
+      </section>
+
+      <section id="screen-generation-clear" class="screen" aria-labelledby="generation-clear-title">
+        <div class="panel celebration-panel">
+          <h2 id="generation-clear-title" class="celebration-title">---</h2>
+          <p id="generation-clear-message" class="celebration-message">---</p>
+        </div>
+        <div class="button-stack">
+          <button id="generation-clear-continue-button" type="button">同じレベルでつづける</button>
+          <button id="generation-clear-zukan-button" class="zukan-button" type="button">ずかんをみる</button>
+          <button id="generation-clear-menu-button" class="ghost-button" type="button">メニューへもどる</button>
+        </div>
+      </section>
+
+      <section id="screen-all-complete" class="screen" aria-labelledby="all-complete-title">
+        <div class="panel celebration-panel">
+          <h2 id="all-complete-title" class="celebration-title">全世代コンプリート！</h2>
+          <p id="all-complete-message" class="celebration-message">すべての ポケモンを
+ゲットしたよ！</p>
+        </div>
+        <div class="button-stack">
+          <button id="all-complete-quiz-button" type="button">同じレベルでつづける</button>
+          <button id="all-complete-zukan-button" class="zukan-button" type="button">ずかんをみる</button>
+          <button id="all-complete-menu-button" class="ghost-button" type="button">メニューへもどる</button>
+        </div>
+      </section>
+
+      <section id="screen-zukan" class="screen zukan-screen" aria-labelledby="zukan-heading">
+        <div class="zukan-header">
+          <h2 id="zukan-heading" class="zukan-title">ずかん</h2>
+          <div id="zukan-tabs" class="generation-tabs" aria-label="世代を えらぶ"></div>
+          <div class="zukan-summary">
+            <div id="zukan-generation-name" class="zukan-summary-name">---</div>
+            <div id="zukan-generation-count" class="zukan-summary-count">---</div>
+          </div>
+          <div id="zukan-message" class="zukan-message" aria-live="polite"></div>
+        </div>
+
+        <div id="zukan-grid" class="zukan-grid" aria-label="ポケモンずかん"></div>
+
+        <div class="button-stack zukan-actions">
+          <button id="zukan-menu-button" class="ghost-button" type="button">メニューへ もどる</button>
+        </div>
+      </section>
+
+      <section id="screen-error" class="screen" aria-live="assertive" aria-labelledby="error-heading">
+        <div class="panel center">
+          <h2 id="error-heading">データを よみこめませんでした</h2>
+          <div id="error-message" class="notice error show">ユーザーデータがまだありません。</div>
+          <p class="small">データは じどうでは つくりません。</p>
+        </div>
+
+        <div class="button-stack">
+          <button id="retry-button" type="button">もういちど よみこむ</button>
+          <button id="error-user-button" class="ghost-button" type="button">ユーザーを えらびなおす</button>
+        </div>
+      </section>
+    </main>
+
+  </div>
+
+  <div id="pokemon-modal-backdrop" class="modal-backdrop" aria-hidden="true">
+    <div class="pokemon-modal" role="dialog" aria-modal="true" aria-labelledby="modal-pokemon-name">
+      <button id="modal-close-button" class="modal-close-button" type="button" aria-label="とじる">×</button>
+      <h2 id="modal-pokemon-name" class="modal-title">---</h2>
+      <img id="modal-pokemon-image" class="modal-image" src="" alt="" />
+      <div class="modal-details">
+        <div class="modal-detail-row">
+          <div class="modal-detail-label">タイプ</div>
+          <div id="modal-pokemon-types" class="modal-detail-value">ふめい</div>
+        </div>
+        <div class="modal-detail-row">
+          <div class="modal-detail-label">高さ</div>
+          <div id="modal-pokemon-height" class="modal-detail-value">ふめい</div>
+        </div>
+        <div class="modal-detail-row">
+          <div class="modal-detail-label">重さ</div>
+          <div id="modal-pokemon-weight" class="modal-detail-value">ふめい</div>
+        </div>
+        <div class="modal-detail-row">
+          <div class="modal-detail-label">せつめい</div>
+          <div id="modal-pokemon-flavor" class="modal-detail-value">せつめいは まだありません。</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script type="module" src="./js/main.js"></script>
+</body>
+</html>
