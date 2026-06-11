@@ -1,6 +1,6 @@
 # docs
 
-最終更新: 2026-06-09
+最終更新: 2026-06-10
 
 このディレクトリは、ポケモンさんすうアプリの仕様・設計・運用ルール・引き継ぎ情報を管理する場所です。
 
@@ -15,6 +15,8 @@
 | V3.1 / Phase 3 完了報告 | `docs/v3_phase_3_completion_report.md` |
 | V3.1 main昇格判断 | `docs/v3_main_promotion_decision.md` |
 | V3.2 / Phase 4 国旗クイズ先行設計 | `docs/v3_country_master_design.md` |
+| V4計画 | `docs/v4_development_plan.md` |
+| 開発運用 | `docs/local_dev_environment.md` |
 | V2 ユーザーデータ | Firestore `users_v2/{userId}` |
 | V2 ポケモンマスター | Firestore `masters/gen_{1..9}` |
 | V1.5 退避版 | `archive/index_v1_5.html` |
@@ -36,8 +38,10 @@
 | `release_and_canary.md` | V3.1 Main 昇格後の Main / Canary / archive / V3.1実行資産運用方針を定義します。 | 運用 | 2026-06-08 |
 | `current_inventory.md` | リポジトリ構成、主要HTML、Firestore、ドキュメントの位置づけを棚卸しします。 | 全体棚卸し | 2026-06-06 |
 | `development_workflow.md` | iPhone / ChatGPT / Codex app / GitHub を使った開発ワークフローを定義します。 | 開発運用 | 2026-06-08 |
+| `local_dev_environment.md` | PC + Codex app + GitHub の初期開発環境とローカル表示確認方法を整理します。 | 開発運用 | 2026-06-10 |
 | `codex_app_guardrails.md` | Codex app を安全に使うための初期運用ガードレールを定義します。 | Codex app運用 | 2026-06-09 |
 | `review_checklist.md` | PR作成前・レビュー時・マージ前後のチェックリストです。 | レビュー | 2026-06-08 |
+| `v4_development_plan.md` | V3.1 Main を壊さずに V4 開発領域を新設して進めるための全体計画です。 | V4計画 | 2026-06-10 |
 | `refactoring_plan.md` | root `index.html` 分割・リファクタリングの基本方針を定義します。 | リファクタリング | 2026-06-06 |
 | `v2_canary_handoff.md` | V2 Canary 開発から Main 昇格完了までの引き継ぎ・完了メモです。 | V2 Canary | 2026-06-04 |
 | `system_definition_v1.5.md` | V1.5 退避版の仕様定義書です。`archive/index_v1_5.html` の参照用として維持します。 | V1.5 archive | 記載なし |
@@ -56,6 +60,7 @@
 | `v3_phase_3_completion_report.md` | V3.1 / Phase 3 の完了内容、実施PR、確認観点、残課題を整理します。 | V3.1 / Phase 3完了 | 2026-06-08 |
 | `v3_main_promotion_decision.md` | V3.1を root `index.html` に昇格するための判断材料、退避方針、rollback方針を整理します。 | V3.1 main昇格判断 | 2026-06-08 |
 | `v3_country_master_design.md` | V3.2 / Phase 4 の国旗クイズに向けた `country_masters` 先行設計です。 | V3.2 / Phase 4先行設計 | 2026-06-08 |
+| `v4_development_plan.md` | V3.2 / Phase 4 として整理していた国旗クイズ構想を、V4 開発計画として進めるための全体計画です。 | V4計画 | 2026-06-10 |
 
 ## 4. 現在の主要ファイルの位置づけ
 
@@ -125,11 +130,12 @@
 ### V3.2 / Phase 4 の国旗クイズ設計に進む場合
 
 ```text
-1. docs/v3_country_master_design.md
-2. docs/v3_phase_3_completion_report.md
-3. docs/data_model_v1_v2.md
-4. docs/review_checklist.md
-5. docs/development_workflow.md
+1. docs/v4_development_plan.md
+2. docs/v3_country_master_design.md
+3. docs/v3_phase_3_completion_report.md
+4. docs/data_model_v1_v2.md
+5. docs/review_checklist.md
+6. docs/development_workflow.md
 ```
 
 ### PR作成・レビュー・マージ判断を確認する場合
