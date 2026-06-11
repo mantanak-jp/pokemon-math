@@ -20,6 +20,7 @@
 | V4国旗クイズ要求仕様 | `docs/v4_flag_quiz_requirements.md` |
 | V4 country_masters 設計 | `docs/v4_country_master_design.md` |
 | V4 country_masters 生成JSON | `data/country_masters.generated.json` |
+| V4 country_masters 投入前確認ツール | `tools/import_country_masters.html` |
 | 開発運用 | `docs/local_dev_environment.md` |
 | Codex連携運用 | `docs/development_workflow.md`, `docs/codex_app_guardrails.md` |
 | V2 ユーザーデータ | Firestore `users_v2/{userId}` |
@@ -143,10 +144,11 @@
 2. docs/v4_flag_quiz_requirements.md
 3. docs/v4_country_master_design.md
 4. data/country_masters.generated.json
-5. docs/v3_country_master_design.md
-6. docs/data_model_v1_v2.md
-7. docs/review_checklist.md
-8. docs/development_workflow.md
+5. tools/import_country_masters.html
+6. docs/v3_country_master_design.md
+7. docs/data_model_v1_v2.md
+8. docs/review_checklist.md
+9. docs/development_workflow.md
 ```
 
 ### V4 開発運用を確認する場合
