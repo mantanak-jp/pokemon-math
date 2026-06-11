@@ -1,0 +1,211 @@
+import {
+  QUIZ_QUESTION_COUNT,
+  QUIZ_NEXT_DELAY_MS
+} from "./constants.js";
+import { state } from "./state.js";
+import { dom } from "./dom.js";
+import { randomInt, shuffleArray } from "./utils.js";
+import {
+  getGenerationText,
+  hasShownGenerationStart,
+  showGenerationStart,
+  showScreen
+} from "./ui.js";
+import { prefetchCurrentGenerationMaster } from "./firestore.js";
+import { showResult } from "./reward.js";
+
+export function makeQuestionForLevel(level) {
+  let n1;
+  let n2;
+  let op = "+";
+  if (level === 1) {
+    n1 = randomInt(1, 9);
+    n2 = randomInt(1, 9);
+    if (Math.random() > 0.5 && n1 >= n2) op = "-";
+  } else if (level === 2) {
+    n1 = randomInt(10, 29);
+    n2 = randomInt(1, 9);
+    if (Math.random() > 0.5) op = "-";
+  } else if (level === 3) {
+    n1 = randomInt(20, 69);
+    n2 = randomInt(10, 49);
+    if (Math.random() > 0.5 && n1 >= n2) op = "-";
+  } else if (level === 4) {
+    n1 = randomInt(1, 9);
+    n2 = randomInt(1, 9);
+    op = "×";
+  } else if (level === 5) {
+    return makeKukuDivisionQuestion();
+  } else if (level === 6) {
+    return makeTwoDigitDivisionQuestion();
+  } else {
+    n1 = randomInt(1, 9);
+    n2 = randomInt(1, 9);
+    op = "×";
+  }
+  const answer = op === "+" ? n1 + n2 : (op === "-" ? n1 - n2 : n1 * n2);
+  return { text: n1 + " " + op + " " + n2 + " = ?", answer };
+}
+
+export function makeKukuDivisionQuestion() {
+  const answer = randomInt(1, 9);
+  const divisor = randomInt(1, 9);
+  const dividend = answer * divisor;
+  return { text: dividend + " ÷ " + divisor + " = ?", answer };
+}
+
+export function makeTwoDigitDivisionQuestion() {
+  const candidates = [];
+  for (let answer = 10; answer <= 24; answer++) {
+    for (let divisor = 2; divisor <= 9; divisor++) {
+      const dividend = answer * divisor;
+      if (dividend >= 10 && dividend <= 99) {
+        candidates.push({ dividend, divisor, answer });
+      }
+    }
+  }
+  const question = candidates[randomInt(0, candidates.length - 1)];
+  return { text: question.dividend + " ÷ " + question.divisor + " = ?", answer: question.answer };
+}
+
+export function makeChoices(correctAnswer) {
+  const choices = [correctAnswer];
+  const candidates = [];
+  for (let diff = -4; diff <= 4; diff++) {
+    const candidate = correctAnswer + diff;
+    if (candidate >= 0 && candidate !== correctAnswer) {
+      candidates.push(candidate);
+    }
+  }
+  shuffleArray(candidates).forEach(function(candidate) {
+    if (choices.length < 4 && !choices.includes(candidate)) {
+      choices.push(candidate);
+    }
+  });
+  let fallback = 0;
+  while (choices.length < 4) {
+    if (!choices.includes(fallback)) {
+      choices.push(fallback);
+    }
+    fallback += 1;
+  }
+  return shuffleArray(choices);
+}
+
+export function resetAnswerButtons() {
+  dom.answerButtons.forEach(function(button) {
+    button.classList.remove("correct", "wrong");
+    button.disabled = false;
+    button.textContent = "?";
+  });
+}
+
+export function shouldShowGenerationStartForLevel() {
+  if (!state.currentUserData || state.currentUserData.cleared_generations === 9) return false;
+  if (new Set(state.currentUserData.current_gen_owned).size !== 0) return false;
+  const generation = state.currentUserData.cleared_generations + 1;
+  return !hasShownGenerationStart(state.selectedUserId, generation);
+}
+
+export function startLevelFlow(level) {
+  if (!state.currentUserData) {
+    showScreen("user");
+    return;
+  }
+  state.selectedLevel = level;
+  if (shouldShowGenerationStartForLevel()) {
+    showGenerationStart(state.currentUserData.cleared_generations + 1, state.selectedLevel);
+    return;
+  }
+  startQuiz(state.selectedLevel);
+}
+
+export function startQuiz(level) {
+  if (!state.currentUserData) {
+    showScreen("user");
+    return;
+  }
+  state.selectedLevel = level;
+  state.currentQuestionIndex = 0;
+  state.correctCount = 0;
+  state.isAnswered = false;
+  state.pendingRewardPokemon = [];
+  state.pendingRewardPokemonList = [];
+  state.isSavingReward = false;
+  state.lastProgressResult = null;
+  if (state.quizTimerId) window.clearTimeout(state.quizTimerId);
+  state.quizTimerId = null;
+  dom.quizScore.textContent = "せいかい: 0";
+  dom.quizAlert.textContent = "";
+  dom.quizAlert.className = "quiz-alert";
+  dom.quizGeneration.textContent = getGenerationText(state.currentUserData.cleared_generations);
+  prefetchCurrentGenerationMaster(state.currentUserData);
+  showScreen("quiz");
+  makeNextQuestion();
+}
+
+export function makeNextQuestion() {
+  state.isAnswered = false;
+  resetAnswerButtons();
+  dom.quizAlert.textContent = "";
+  dom.quizAlert.className = "quiz-alert";
+  state.currentQuestionIndex += 1;
+  dom.quizCount.textContent = "だい " + state.currentQuestionIndex + " もん";
+  dom.quizScore.textContent = "せいかい: " + state.correctCount;
+  dom.quizProgress.style.width = ((state.currentQuestionIndex - 1) / QUIZ_QUESTION_COUNT * 100) + "%";
+  const question = makeQuestionForLevel(state.selectedLevel);
+  state.currentCorrectAnswer = question.answer;
+  dom.quizQuestion.textContent = question.text;
+  const choices = makeChoices(state.currentCorrectAnswer);
+  dom.answerButtons.forEach(function(button, index) {
+    button.textContent = choices[index];
+  });
+}
+
+export function answerQuestion(button) {
+  if (state.isAnswered) return;
+  state.isAnswered = true;
+  dom.answerButtons.forEach(function(answerButton) {
+    answerButton.disabled = true;
+  });
+  const selectedAnswer = Number(button.textContent);
+  if (selectedAnswer === state.currentCorrectAnswer) {
+    state.correctCount += 1;
+    button.classList.add("correct");
+    dom.quizAlert.textContent = "⭕ せいかい！";
+    dom.quizAlert.className = "quiz-alert success";
+    dom.quizScore.textContent = "せいかい: " + state.correctCount;
+  } else {
+    button.classList.add("wrong");
+    dom.answerButtons.forEach(function(answerButton) {
+      if (Number(answerButton.textContent) === state.currentCorrectAnswer) {
+        answerButton.classList.add("correct");
+      }
+    });
+    dom.quizAlert.textContent = "❌ ざんねん！\nせいかいは " + state.currentCorrectAnswer;
+    dom.quizAlert.className = "quiz-alert wrong";
+  }
+  state.quizTimerId = window.setTimeout(function() {
+    state.quizTimerId = null;
+    if (state.currentQuestionIndex < QUIZ_QUESTION_COUNT) {
+      makeNextQuestion();
+    } else {
+      showResult();
+    }
+  }, QUIZ_NEXT_DELAY_MS);
+}
+
+window.AppQuiz = {
+  randomInt,
+  shuffleArray,
+  makeQuestionForLevel,
+  makeKukuDivisionQuestion,
+  makeTwoDigitDivisionQuestion,
+  makeChoices,
+  resetAnswerButtons,
+  shouldShowGenerationStartForLevel,
+  startLevelFlow,
+  startQuiz,
+  makeNextQuestion,
+  answerQuestion
+};
