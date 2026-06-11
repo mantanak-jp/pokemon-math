@@ -182,6 +182,17 @@ Firestore投入元データを追加・更新するPRでは、以下も確認し
 - V4関連データPRでは、現在のV4確認済みバージョン表示をPR本文に明記している
 ```
 
+Firestore投入補助ツールを追加・更新するPRでは、以下も確認します。
+
+```text
+- プレビュー専用か、実投入機能を含むかが明確である
+- Step 7 の投入前確認ツールでは Firestore実データに書き込まない
+- Firestore SDK、Firebase config、書き込み処理を含める場合は明示承認と安全策がある
+- data/country_masters.generated.json を意図せず変更していない
+- root index.html / v3/ / v4/ を変更していない
+- 実投入は Step 8 として分離されている
+```
+
 ## 9. users_v2 データ保護チェック
 
 実ユーザーデータ保護のため、以下を確認します。

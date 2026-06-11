@@ -1,0 +1,595 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>country_masters import preview</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f5f7fb;
+      --panel: #ffffff;
+      --ink: #1e293b;
+      --muted: #64748b;
+      --line: #d8e0ec;
+      --ok: #0f8a5f;
+      --warn: #b45309;
+      --bad: #b42318;
+      --accent: #2457c5;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--bg);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.6;
+    }
+
+    header,
+    main {
+      width: min(1120px, calc(100% - 32px));
+      margin: 0 auto;
+    }
+
+    header {
+      padding: 28px 0 18px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 1.65rem;
+      line-height: 1.25;
+    }
+
+    h2 {
+      margin: 0 0 12px;
+      font-size: 1.05rem;
+    }
+
+    p {
+      margin: 0 0 10px;
+    }
+
+    code {
+      font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+      font-size: 0.95em;
+    }
+
+    .notice {
+      border: 2px solid #f3b95f;
+      background: #fff7e8;
+      padding: 14px 16px;
+      border-radius: 8px;
+      font-weight: 700;
+    }
+
+    .subtle {
+      color: var(--muted);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin: 18px 0;
+    }
+
+    .metric,
+    section {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+    }
+
+    .metric {
+      min-height: 92px;
+      padding: 14px;
+    }
+
+    .metric .label {
+      color: var(--muted);
+      font-size: 0.82rem;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .metric .value {
+      margin-top: 4px;
+      font-size: 1.65rem;
+      font-weight: 800;
+      line-height: 1.2;
+    }
+
+    section {
+      margin: 16px 0;
+      padding: 18px;
+    }
+
+    .status-list {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px 14px;
+      padding: 0;
+      margin: 0;
+      list-style: none;
+    }
+
+    .status-list li {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      border-bottom: 1px solid #edf1f7;
+      padding: 7px 0;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 64px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .pass {
+      color: #ffffff;
+      background: var(--ok);
+    }
+
+    .fail {
+      color: #ffffff;
+      background: var(--bad);
+    }
+
+    .warn {
+      color: #3f2502;
+      background: #facc15;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+
+    table {
+      width: 100%;
+      min-width: 760px;
+      border-collapse: collapse;
+      background: #ffffff;
+    }
+
+    th,
+    td {
+      border-bottom: 1px solid #edf1f7;
+      padding: 9px 10px;
+      text-align: left;
+      vertical-align: middle;
+      font-size: 0.92rem;
+    }
+
+    th {
+      color: #334155;
+      background: #f8fafc;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .flag {
+      width: 52px;
+      height: 34px;
+      object-fit: contain;
+      border: 1px solid var(--line);
+      background: #f8fafc;
+      border-radius: 4px;
+    }
+
+    .error-list {
+      margin: 0;
+      padding-left: 20px;
+      color: var(--bad);
+    }
+
+    .mono-block {
+      overflow-x: auto;
+      margin: 0;
+      padding: 12px;
+      border-radius: 8px;
+      background: #0f172a;
+      color: #dbeafe;
+      font-size: 0.85rem;
+    }
+
+    @media (max-width: 760px) {
+      header,
+      main {
+        width: min(100% - 20px, 1120px);
+      }
+
+      .grid,
+      .status-list {
+        grid-template-columns: 1fr;
+      }
+
+      section {
+        padding: 14px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>country_masters import preview</h1>
+    <p class="subtle">JSON path: <code id="jsonPath">../data/country_masters.generated.json</code></p>
+    <div class="notice">この画面は確認専用。Firestoreには書き込みません。Step 7 では投入処理・Firestore SDK・Firebase config を実装していません。</div>
+  </header>
+
+  <main>
+    <section>
+      <h2>投入前警告</h2>
+      <p>このツールは V4 国旗クイズ用 <code>country_masters</code> の投入準備用です。Firestore投入は Step 8 で実施します。</p>
+      <p>root <code>index.html</code> / <code>v3/</code> / <code>v4/</code> には影響しません。実投入前に JSON 件数、サンプル、<code>enabled=false</code> の一覧を確認してください。</p>
+    </section>
+
+    <div class="grid" aria-label="summary metrics">
+      <div class="metric">
+        <div class="label">JSON parse</div>
+        <div class="value" id="parseStatus">...</div>
+      </div>
+      <div class="metric">
+        <div class="label">total</div>
+        <div class="value" id="totalCount">...</div>
+      </div>
+      <div class="metric">
+        <div class="label">enabled=true</div>
+        <div class="value" id="enabledTrueCount">...</div>
+      </div>
+      <div class="metric">
+        <div class="label">enabled=false</div>
+        <div class="value" id="enabledFalseCount">...</div>
+      </div>
+    </div>
+
+    <section>
+      <h2>検証結果</h2>
+      <ul class="status-list" id="validationList"></ul>
+    </section>
+
+    <section>
+      <h2>enabled=false 一覧</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>country_id</th>
+              <th>country_name_ja</th>
+              <th>country_name_en</th>
+            </tr>
+          </thead>
+          <tbody id="disabledRows">
+            <tr><td colspan="3">loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section>
+      <h2>先頭10件サンプル</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>flag</th>
+              <th>country_id</th>
+              <th>country_code</th>
+              <th>country_name_ja</th>
+              <th>country_name_en</th>
+              <th>enabled</th>
+              <th>flag_url</th>
+            </tr>
+          </thead>
+          <tbody id="sampleRows">
+            <tr><td colspan="7">loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section>
+      <h2>Firestore write behavior</h2>
+      <p><span class="badge pass">disabled</span> 書き込み機能は未実装です。Firestore SDK import、Firebase config、collection 書き込み処理はありません。</p>
+    </section>
+
+    <section>
+      <h2>検証詳細</h2>
+      <pre class="mono-block" id="details">loading...</pre>
+    </section>
+  </main>
+
+  <script>
+    const JSON_PATH = "../data/country_masters.generated.json";
+    const REQUIRED_FIELDS = [
+      "country_id",
+      "country_code",
+      "country_name_ja",
+      "country_name_en",
+      "flag_url",
+      "region",
+      "capital_ja",
+      "difficulty",
+      "similar_group_id",
+      "enabled",
+      "source",
+      "updated_at"
+    ];
+
+    const checks = [
+      { key: "fetch", label: "JSON fetch" },
+      { key: "parse", label: "JSON parse" },
+      { key: "array", label: "root array" },
+      { key: "required", label: "required fields" },
+      { key: "countryIdFormat", label: "country_id lowercase alpha-2" },
+      { key: "countryCodeFormat", label: "country_code uppercase alpha-2" },
+      { key: "idCodeConsistency", label: "country_id / country_code consistency" },
+      { key: "countryIdUnique", label: "country_id uniqueness" },
+      { key: "countryCodeUnique", label: "country_code uniqueness" },
+      { key: "flagUrl", label: "flag_url https format" },
+      { key: "enabledBoolean", label: "enabled boolean" },
+      { key: "difficultyType", label: "difficulty number or null" },
+      { key: "similarGroupType", label: "similar_group_id string or null" },
+      { key: "regionType", label: "region string or null" },
+      { key: "capitalType", label: "capital_ja string or null" },
+      { key: "noEmptyNullable", label: "no empty string in nullable fields" },
+      { key: "firestoreWrites", label: "Firestore writes disabled" }
+    ];
+
+    const state = {
+      fetch: false,
+      parse: false,
+      array: false,
+      required: false,
+      countryIdFormat: false,
+      countryCodeFormat: false,
+      idCodeConsistency: false,
+      countryIdUnique: false,
+      countryCodeUnique: false,
+      flagUrl: false,
+      enabledBoolean: false,
+      difficultyType: false,
+      similarGroupType: false,
+      regionType: false,
+      capitalType: false,
+      noEmptyNullable: false,
+      firestoreWrites: true
+    };
+
+    function text(id, value) {
+      document.getElementById(id).textContent = value;
+    }
+
+    function badge(ok) {
+      return `<span class="badge ${ok ? "pass" : "fail"}">${ok ? "PASS" : "FAIL"}</span>`;
+    }
+
+    function renderValidation() {
+      const list = document.getElementById("validationList");
+      list.innerHTML = checks.map((check) => {
+        return `<li><span>${check.label}</span>${badge(Boolean(state[check.key]))}</li>`;
+      }).join("");
+    }
+
+    function renderDisabled(records) {
+      const rows = document.getElementById("disabledRows");
+      if (!records.length) {
+        rows.innerHTML = `<tr><td colspan="3">なし</td></tr>`;
+        return;
+      }
+
+      rows.innerHTML = records.map((record) => `
+        <tr>
+          <td><code>${escapeHtml(record.country_id)}</code></td>
+          <td>${escapeHtml(record.country_name_ja)}</td>
+          <td>${escapeHtml(record.country_name_en)}</td>
+        </tr>
+      `).join("");
+    }
+
+    function renderSamples(records) {
+      const rows = document.getElementById("sampleRows");
+      rows.innerHTML = records.slice(0, 10).map((record) => `
+        <tr>
+          <td><img class="flag" src="${escapeAttribute(record.flag_url)}" alt=""></td>
+          <td><code>${escapeHtml(record.country_id)}</code></td>
+          <td><code>${escapeHtml(record.country_code)}</code></td>
+          <td>${escapeHtml(record.country_name_ja)}</td>
+          <td>${escapeHtml(record.country_name_en)}</td>
+          <td>${record.enabled ? "true" : "false"}</td>
+          <td><code>${escapeHtml(record.flag_url)}</code></td>
+        </tr>
+      `).join("");
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function escapeAttribute(value) {
+      return escapeHtml(value).replaceAll("`", "&#096;");
+    }
+
+    function validate(records) {
+      const errors = [];
+      const countryIds = new Set();
+      const countryCodes = new Set();
+      const nullableFields = ["region", "capital_ja", "difficulty", "similar_group_id"];
+
+      state.array = Array.isArray(records);
+      if (!state.array) {
+        errors.push("Root value is not an array.");
+        return { errors, disabled: [] };
+      }
+
+      state.required = true;
+      state.countryIdFormat = true;
+      state.countryCodeFormat = true;
+      state.idCodeConsistency = true;
+      state.countryIdUnique = true;
+      state.countryCodeUnique = true;
+      state.flagUrl = true;
+      state.enabledBoolean = true;
+      state.difficultyType = true;
+      state.similarGroupType = true;
+      state.regionType = true;
+      state.capitalType = true;
+      state.noEmptyNullable = true;
+
+      records.forEach((record, index) => {
+        REQUIRED_FIELDS.forEach((field) => {
+          if (!Object.prototype.hasOwnProperty.call(record, field)) {
+            state.required = false;
+            errors.push(`${index}: missing ${field}`);
+          }
+        });
+
+        if (!/^[a-z]{2}$/.test(record.country_id)) {
+          state.countryIdFormat = false;
+          errors.push(`${index}: invalid country_id ${record.country_id}`);
+        }
+
+        if (!/^[A-Z]{2}$/.test(record.country_code)) {
+          state.countryCodeFormat = false;
+          errors.push(`${index}: invalid country_code ${record.country_code}`);
+        }
+
+        if (record.country_code !== String(record.country_id).toUpperCase()) {
+          state.idCodeConsistency = false;
+          errors.push(`${index}: country_id / country_code mismatch`);
+        }
+
+        if (countryIds.has(record.country_id)) {
+          state.countryIdUnique = false;
+          errors.push(`${index}: duplicate country_id ${record.country_id}`);
+        }
+        countryIds.add(record.country_id);
+
+        if (countryCodes.has(record.country_code)) {
+          state.countryCodeUnique = false;
+          errors.push(`${index}: duplicate country_code ${record.country_code}`);
+        }
+        countryCodes.add(record.country_code);
+
+        if (!record.flag_url || !record.flag_url.startsWith("https://") || !record.flag_url.includes(`/${record.country_id}.png`)) {
+          state.flagUrl = false;
+          errors.push(`${index}: invalid flag_url ${record.flag_url}`);
+        }
+
+        if (typeof record.enabled !== "boolean") {
+          state.enabledBoolean = false;
+          errors.push(`${index}: enabled is not boolean`);
+        }
+
+        if (!(typeof record.difficulty === "number" || record.difficulty === null)) {
+          state.difficultyType = false;
+          errors.push(`${index}: difficulty is not number or null`);
+        }
+
+        if (!(typeof record.similar_group_id === "string" || record.similar_group_id === null)) {
+          state.similarGroupType = false;
+          errors.push(`${index}: similar_group_id is not string or null`);
+        }
+
+        if (!(typeof record.region === "string" || record.region === null)) {
+          state.regionType = false;
+          errors.push(`${index}: region is not string or null`);
+        }
+
+        if (!(typeof record.capital_ja === "string" || record.capital_ja === null)) {
+          state.capitalType = false;
+          errors.push(`${index}: capital_ja is not string or null`);
+        }
+
+        nullableFields.forEach((field) => {
+          if (record[field] === "") {
+            state.noEmptyNullable = false;
+            errors.push(`${index}: empty string in ${field}`);
+          }
+        });
+      });
+
+      return {
+        errors,
+        disabled: records.filter((record) => record.enabled === false)
+      };
+    }
+
+    async function load() {
+      renderValidation();
+      try {
+        const response = await fetch(JSON_PATH, { cache: "no-store" });
+        state.fetch = response.ok;
+        if (!response.ok) {
+          throw new Error(`fetch failed: ${response.status}`);
+        }
+
+        const records = await response.json();
+        state.parse = true;
+        const result = validate(records);
+        const enabledTrue = records.filter((record) => record.enabled === true).length;
+        const enabledFalse = result.disabled.length;
+
+        text("parseStatus", "ok");
+        text("totalCount", records.length);
+        text("enabledTrueCount", enabledTrue);
+        text("enabledFalseCount", enabledFalse);
+        renderValidation();
+        renderDisabled(result.disabled);
+        renderSamples(records);
+        text("details", JSON.stringify({
+          jsonPath: JSON_PATH,
+          parse: "ok",
+          total: records.length,
+          enabledTrue,
+          enabledFalse,
+          enabledFalseIds: result.disabled.map((record) => record.country_id),
+          validationErrors: result.errors,
+          firestoreWrites: "disabled / not implemented"
+        }, null, 2));
+      } catch (error) {
+        text("parseStatus", "error");
+        text("totalCount", "-");
+        text("enabledTrueCount", "-");
+        text("enabledFalseCount", "-");
+        renderValidation();
+        document.getElementById("disabledRows").innerHTML = `<tr><td colspan="3">load failed</td></tr>`;
+        document.getElementById("sampleRows").innerHTML = `<tr><td colspan="7">load failed</td></tr>`;
+        text("details", JSON.stringify({
+          jsonPath: JSON_PATH,
+          error: error.message,
+          firestoreWrites: "disabled / not implemented"
+        }, null, 2));
+      }
+    }
+
+    load();
+  </script>
+</body>
+</html>
