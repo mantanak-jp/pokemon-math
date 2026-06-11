@@ -13,6 +13,10 @@
 - 既存アプリと既存データを壊さないことを最優先にします。
 - 実装前に、関連する `docs/` 配下の仕様書・棚卸し文書を確認してください。
 - Codex app の詳細な初期運用ルールは `docs/codex_app_guardrails.md` を参照してください。
+- GitHub main を唯一の正本として扱います。
+- Codex app の実行環境は、ローカルPC上の `C:\Users\manta\dev\pokemon-math` リポジトリです。
+- ユーザーはローカルPCを直接操作せず、iPhone の ChatGPT アプリ内 Codex リンクから Codex app に指示します。
+- V4 開発確認は `/v4/` ディレクトリを使い、GitHub Pages の `/v4/` iPhone実機確認は通常 PR merge 後に行います。
 
 ## 2. 変更禁止・注意ルール
 
@@ -25,6 +29,7 @@
 - 通常ユーザー・子ども向け導線に `canary/migration.html` へのリンクを置かないでください。
 - commit は、ユーザーが「commitまでOK」と明示した場合のみ行ってください。
 - push と PR 作成は、ユーザーが明示指示した場合のみ行ってください。
+- 作業は branch + PR で進めてください。
 - main への直接 push は禁止します。
 - merge は必ずユーザー判断とし、Codex app は明示指示なしに merge しないでください。
 
