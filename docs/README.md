@@ -17,6 +17,7 @@
 | V3.1 main昇格判断 | `docs/v3_main_promotion_decision.md` |
 | V3.2 / Phase 4 国旗クイズ先行設計 | `docs/v3_country_master_design.md` |
 | V4計画 | `docs/v4_development_plan.md` |
+| V4国旗クイズ要求仕様 | `docs/v4_flag_quiz_requirements.md` |
 | 開発運用 | `docs/local_dev_environment.md` |
 | Codex連携運用 | `docs/development_workflow.md`, `docs/codex_app_guardrails.md` |
 | V2 ユーザーデータ | Firestore `users_v2/{userId}` |
@@ -44,6 +45,7 @@
 | `codex_app_guardrails.md` | Codex app を安全に使うための運用ガードレールを定義します。 | Codex app運用 | 2026-06-11 |
 | `review_checklist.md` | PR作成前・レビュー時・マージ前後のチェックリストです。 | レビュー | 2026-06-11 |
 | `v4_development_plan.md` | V3.1 Main を壊さずに V4 開発領域を新設して進めるための全体計画です。 | V4計画 | 2026-06-11 |
+| `v4_flag_quiz_requirements.md` | V4 に追加する国旗クイズの要求仕様です。画面・導線、出題、判定、報酬、安全要求を定義します。 | V4国旗クイズ | 2026-06-11 |
 | `refactoring_plan.md` | root `index.html` 分割・リファクタリングの基本方針を定義します。 | リファクタリング | 2026-06-06 |
 | `v2_canary_handoff.md` | V2 Canary 開発から Main 昇格完了までの引き継ぎ・完了メモです。 | V2 Canary | 2026-06-04 |
 | `system_definition_v1.5.md` | V1.5 退避版の仕様定義書です。`archive/index_v1_5.html` の参照用として維持します。 | V1.5 archive | 記載なし |
@@ -131,12 +133,12 @@
 5. docs/development_workflow.md
 ```
 
-### V3.2 / Phase 4 の国旗クイズ設計に進む場合
+### V4 国旗クイズ設計に進む場合
 
 ```text
 1. docs/v4_development_plan.md
-2. docs/v3_country_master_design.md
-3. docs/v3_phase_3_completion_report.md
+2. docs/v4_flag_quiz_requirements.md
+3. docs/v3_country_master_design.md
 4. docs/data_model_v1_v2.md
 5. docs/review_checklist.md
 6. docs/development_workflow.md
