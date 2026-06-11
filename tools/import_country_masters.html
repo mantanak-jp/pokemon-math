@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>country_masters import preview</title>
+  <title>country_masters import tool</title>
   <style>
     :root {
       color-scheme: light;
@@ -66,6 +66,11 @@
       padding: 14px 16px;
       border-radius: 8px;
       font-weight: 700;
+    }
+
+    .danger {
+      border-color: #f08a80;
+      background: #fff1f0;
     }
 
     .subtle {
@@ -214,6 +219,65 @@
       font-size: 0.85rem;
     }
 
+    .control-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(260px, 360px);
+      gap: 16px;
+      align-items: start;
+    }
+
+    .field {
+      display: grid;
+      gap: 6px;
+      margin: 12px 0;
+    }
+
+    .field label {
+      font-weight: 700;
+    }
+
+    .field input[type="text"] {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 10px 12px;
+      font: inherit;
+    }
+
+    .check-row {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      margin: 12px 0;
+    }
+
+    .check-row input {
+      margin-top: 5px;
+    }
+
+    .primary-action {
+      width: 100%;
+      border: 0;
+      border-radius: 8px;
+      padding: 12px 16px;
+      color: #ffffff;
+      background: var(--bad);
+      font: inherit;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .primary-action:disabled {
+      color: #64748b;
+      background: #d8e0ec;
+      cursor: not-allowed;
+    }
+
+    .safety-list {
+      margin: 0;
+      padding-left: 20px;
+    }
+
     @media (max-width: 760px) {
       header,
       main {
@@ -221,6 +285,7 @@
       }
 
       .grid,
+      .control-grid,
       .status-list {
         grid-template-columns: 1fr;
       }
@@ -233,16 +298,17 @@
 </head>
 <body>
   <header>
-    <h1>country_masters import preview</h1>
+    <h1>country_masters import tool</h1>
     <p class="subtle">JSON path: <code id="jsonPath">../data/country_masters.generated.json</code></p>
-    <div class="notice">この画面は確認専用。Firestoreには書き込みません。Step 7 では投入処理・Firestore SDK・Firebase config を実装していません。</div>
+    <div class="notice danger">Step 8-A では投入機能だけを追加します。Firestoreへの実投入は Step 8-B の明示承認後にだけ実行してください。</div>
   </header>
 
   <main>
     <section>
       <h2>投入前警告</h2>
-      <p>このツールは V4 国旗クイズ用 <code>country_masters</code> の投入準備用です。Firestore投入は Step 8 で実施します。</p>
-      <p>root <code>index.html</code> / <code>v3/</code> / <code>v4/</code> には影響しません。実投入前に JSON 件数、サンプル、<code>enabled=false</code> の一覧を確認してください。</p>
+      <p>このツールは V4 国旗クイズ用 <code>country_masters</code> の投入準備用です。実投入は Step 8-B で実施します。</p>
+      <p>投入先 collection は <code>country_masters</code>、document id は <code>record.country_id</code> です。既存 document がある場合は同じ document id に上書きされます。</p>
+      <p>ページ表示、JSON fetch、validation だけでは Firestore 書き込みは発生しません。書き込みは安全条件を満たしたうえで、投入ボタンを押した場合だけ実行されます。</p>
     </section>
 
     <div class="grid" aria-label="summary metrics">
@@ -267,6 +333,28 @@
     <section>
       <h2>検証結果</h2>
       <ul class="status-list" id="validationList"></ul>
+    </section>
+
+    <section>
+      <h2>投入予定</h2>
+      <div class="grid" aria-label="import plan">
+        <div class="metric">
+          <div class="label">collection</div>
+          <div class="value" id="targetCollection">country_masters</div>
+        </div>
+        <div class="metric">
+          <div class="label">document id</div>
+          <div class="value">country_id</div>
+        </div>
+        <div class="metric">
+          <div class="label">planned writes</div>
+          <div class="value" id="plannedWrites">...</div>
+        </div>
+        <div class="metric">
+          <div class="label">sample ids</div>
+          <div class="value" id="sampleIds">...</div>
+        </div>
+      </div>
     </section>
 
     <section>
@@ -310,8 +398,37 @@
     </section>
 
     <section>
-      <h2>Firestore write behavior</h2>
-      <p><span class="badge pass">disabled</span> 書き込み機能は未実装です。Firestore SDK import、Firebase config、collection 書き込み処理はありません。</p>
+      <h2>Firestore 投入</h2>
+      <div class="control-grid">
+        <div>
+          <p>安全条件をすべて満たすまで投入ボタンは有効になりません。</p>
+          <ul class="safety-list">
+            <li>JSON parse 成功</li>
+            <li>validation errors が 0</li>
+            <li>total 252 / enabled=true 250 / enabled=false 2</li>
+            <li>enabled=false が <code>eu</code> / <code>un</code></li>
+            <li>確認チェックボックス ON</li>
+            <li>確認テキスト <code>IMPORT country_masters</code> の完全一致</li>
+          </ul>
+        </div>
+        <div>
+          <div class="check-row">
+            <input type="checkbox" id="confirmCheckbox">
+            <label for="confirmCheckbox">Step 8-B の明示承認後にのみ実行すること、既存 document が上書きされることを確認しました。</label>
+          </div>
+          <div class="field">
+            <label for="confirmText">確認テキスト</label>
+            <input id="confirmText" type="text" autocomplete="off" placeholder="IMPORT country_masters">
+          </div>
+          <button class="primary-action" id="importButton" type="button" disabled>Firestoreに投入する</button>
+        </div>
+      </div>
+      <p class="subtle">Codex はこのボタンを押しません。今回のPRでは Firestore 実データへの作成・更新・削除は行いません。</p>
+    </section>
+
+    <section>
+      <h2>投入結果</h2>
+      <pre class="mono-block" id="importResult">not executed</pre>
     </section>
 
     <section>
@@ -320,8 +437,18 @@
     </section>
   </main>
 
-  <script>
+  <script type="module">
+    import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getFirestore, writeBatch, doc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { firebaseConfig } from "../v4/js/config.js";
+
     const JSON_PATH = "../data/country_masters.generated.json";
+    const TARGET_COLLECTION = "country_masters";
+    const REQUIRED_CONFIRM_TEXT = "IMPORT country_masters";
+    const EXPECTED_TOTAL = 252;
+    const EXPECTED_ENABLED_TRUE = 250;
+    const EXPECTED_ENABLED_FALSE = 2;
+    const EXPECTED_DISABLED_IDS = ["eu", "un"];
     const REQUIRED_FIELDS = [
       "country_id",
       "country_code",
@@ -354,7 +481,10 @@
       { key: "regionType", label: "region string or null" },
       { key: "capitalType", label: "capital_ja string or null" },
       { key: "noEmptyNullable", label: "no empty string in nullable fields" },
-      { key: "firestoreWrites", label: "Firestore writes disabled" }
+      { key: "expectedCounts", label: "expected counts" },
+      { key: "expectedDisabledIds", label: "expected disabled ids" },
+      { key: "manualSafety", label: "manual safety controls" },
+      { key: "noAutoWrite", label: "no write on page load" }
     ];
 
     const state = {
@@ -374,8 +504,15 @@
       regionType: false,
       capitalType: false,
       noEmptyNullable: false,
-      firestoreWrites: true
+      expectedCounts: false,
+      expectedDisabledIds: false,
+      manualSafety: false,
+      noAutoWrite: true
     };
+
+    let loadedRecords = [];
+    let validationErrors = [];
+    let db = null;
 
     function text(id, value) {
       document.getElementById(id).textContent = value;
@@ -390,6 +527,25 @@
       list.innerHTML = checks.map((check) => {
         return `<li><span>${check.label}</span>${badge(Boolean(state[check.key]))}</li>`;
       }).join("");
+    }
+
+    function getConfirmState() {
+      const checkbox = document.getElementById("confirmCheckbox");
+      const input = document.getElementById("confirmText");
+      return Boolean(checkbox.checked && input.value === REQUIRED_CONFIRM_TEXT);
+    }
+
+    function updateImportButton() {
+      const button = document.getElementById("importButton");
+      state.manualSafety = getConfirmState();
+      const canImport = state.parse &&
+        state.array &&
+        validationErrors.length === 0 &&
+        state.expectedCounts &&
+        state.expectedDisabledIds &&
+        state.manualSafety;
+      button.disabled = !canImport;
+      renderValidation();
     }
 
     function renderDisabled(records) {
@@ -541,6 +697,70 @@
       };
     }
 
+    function initializeFirestore() {
+      const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
+      db = getFirestore(app);
+    }
+
+    function buildImportPayload(record) {
+      return {
+        country_id: record.country_id,
+        country_code: record.country_code,
+        country_name_ja: record.country_name_ja,
+        country_name_en: record.country_name_en,
+        flag_url: record.flag_url,
+        region: record.region,
+        capital_ja: record.capital_ja,
+        difficulty: record.difficulty,
+        similar_group_id: record.similar_group_id,
+        enabled: record.enabled,
+        source: record.source,
+        updated_at: record.updated_at
+      };
+    }
+
+    async function importCountryMasters() {
+      if (document.getElementById("importButton").disabled) return;
+
+      const confirmed = window.confirm(
+        "country_masters に 252件を書き込みます。\n" +
+        "既存documentがある場合は上書きされます。\n" +
+        "この操作は Step 8-B の明示承認後にのみ実行してください。\n\n" +
+        "実行しますか？"
+      );
+      if (!confirmed) return;
+
+      const startedAt = new Date();
+      const result = {
+        collection: TARGET_COLLECTION,
+        started_at: startedAt.toISOString(),
+        completed_at: null,
+        success_count: 0,
+        failure_count: 0,
+        errors: []
+      };
+
+      try {
+        initializeFirestore();
+        const chunkSize = 450;
+        for (let start = 0; start < loadedRecords.length; start += chunkSize) {
+          const batch = writeBatch(db);
+          const chunk = loadedRecords.slice(start, start + chunkSize);
+          chunk.forEach((record) => {
+            batch.set(doc(db, TARGET_COLLECTION, record.country_id), buildImportPayload(record));
+          });
+          await batch.commit();
+          result.success_count += chunk.length;
+        }
+      } catch (error) {
+        result.failure_count = loadedRecords.length - result.success_count;
+        result.errors.push(error.message);
+      } finally {
+        result.completed_at = new Date().toISOString();
+        text("importResult", JSON.stringify(result, null, 2));
+      }
+    }
+
     async function load() {
       renderValidation();
       try {
@@ -551,15 +771,24 @@
         }
 
         const records = await response.json();
+        loadedRecords = records;
         state.parse = true;
         const result = validate(records);
+        validationErrors = result.errors;
         const enabledTrue = records.filter((record) => record.enabled === true).length;
         const enabledFalse = result.disabled.length;
+        const disabledIds = result.disabled.map((record) => record.country_id).sort();
+        state.expectedCounts = records.length === EXPECTED_TOTAL &&
+          enabledTrue === EXPECTED_ENABLED_TRUE &&
+          enabledFalse === EXPECTED_ENABLED_FALSE;
+        state.expectedDisabledIds = disabledIds.join(",") === EXPECTED_DISABLED_IDS.join(",");
 
         text("parseStatus", "ok");
         text("totalCount", records.length);
         text("enabledTrueCount", enabledTrue);
         text("enabledFalseCount", enabledFalse);
+        text("plannedWrites", records.length);
+        text("sampleIds", records.slice(0, 5).map((record) => record.country_id).join(", "));
         renderValidation();
         renderDisabled(result.disabled);
         renderSamples(records);
@@ -569,26 +798,37 @@
           total: records.length,
           enabledTrue,
           enabledFalse,
-          enabledFalseIds: result.disabled.map((record) => record.country_id),
+          enabledFalseIds: disabledIds,
           validationErrors: result.errors,
-          firestoreWrites: "disabled / not implemented"
+          importTargetCollection: TARGET_COLLECTION,
+          documentIdRule: "record.country_id",
+          importExecutedOnLoad: false
         }, null, 2));
+        updateImportButton();
       } catch (error) {
+        loadedRecords = [];
+        validationErrors = [error.message];
         text("parseStatus", "error");
         text("totalCount", "-");
         text("enabledTrueCount", "-");
         text("enabledFalseCount", "-");
+        text("plannedWrites", "-");
+        text("sampleIds", "-");
         renderValidation();
         document.getElementById("disabledRows").innerHTML = `<tr><td colspan="3">load failed</td></tr>`;
         document.getElementById("sampleRows").innerHTML = `<tr><td colspan="7">load failed</td></tr>`;
         text("details", JSON.stringify({
           jsonPath: JSON_PATH,
           error: error.message,
-          firestoreWrites: "disabled / not implemented"
+          importExecutedOnLoad: false
         }, null, 2));
+        updateImportButton();
       }
     }
 
+    document.getElementById("confirmCheckbox").addEventListener("change", updateImportButton);
+    document.getElementById("confirmText").addEventListener("input", updateImportButton);
+    document.getElementById("importButton").addEventListener("click", importCountryMasters);
     load();
   </script>
 </body>
