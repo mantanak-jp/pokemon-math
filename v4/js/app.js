@@ -4,6 +4,7 @@ import { formatDevBuildInfo } from "./version.js";
 import {
   continueAfterGenerationClear,
   renderFastMenu,
+  showMathLevelSelect,
   showAllComplete,
   showError,
   showGenerationClear,
@@ -16,6 +17,7 @@ import {
 } from "./firestore.js";
 import {
   answerQuestion,
+  startFlagQuiz,
   startLevelFlow,
   startQuiz
 } from "./quiz.js";
@@ -67,6 +69,9 @@ export function setupEvents() {
     });
   });
 
+  document.getElementById("start-math-quiz-button").addEventListener("click", showMathLevelSelect);
+  document.getElementById("start-flag-quiz-button").addEventListener("click", startFlagQuiz);
+
   dom.answerButtons.forEach(function(button) {
     button.addEventListener("click", function() {
       answerQuestion(button);
@@ -99,6 +104,10 @@ export function setupEvents() {
 
   dom.resultRetryButton.addEventListener("click", function() {
     if (state.isSavingReward) return;
+    if (state.quizType === "flag") {
+      startFlagQuiz();
+      return;
+    }
     startQuiz(state.selectedLevel);
   });
   dom.resultZukanButton.addEventListener("click", function() {

@@ -230,9 +230,14 @@ Step 5: country_masters設計のV4向け確定
 Step 6: country_masters.generated.json 作成
 Step 7: Firestore投入ツール作成
 Step 8: Firestore country_masters 投入・確認
-Step 9: V4国旗クイズ実装
+Step 9-A: V4国旗クイズの最小実装
+Step 9-B: 報酬接続・結果画面調整・実機確認調整
 Step 10: V4実機確認・安定化
 ```
+
+Step 9-A では、メニューから「こっきクイズ」を選び、Firestore `country_masters` の `enabled=true` から5問を生成し、国旗画像と日本語国名4択で回答できるところまでを実装します。
+
+報酬接続、結果画面の最終調整、実機確認に基づく細部調整は Step 9-B で行います。
 
 ## 12. 今後の確認観点のルール
 
@@ -245,3 +250,9 @@ V4開発版 v4.0.0.0.202606111628
 ```
 
 Step 9 以降でバージョンが更新された場合は、確認観点に新しいバージョン番号を明記します。
+
+Step 9-A の期待バージョン表示は以下です。
+
+```text
+V4開発版 v4.0.0.1.202606120001
+```

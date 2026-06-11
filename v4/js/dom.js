@@ -20,12 +20,17 @@ const loadingUserName = document.getElementById("loading-user-name");
 const menuDisplayName = document.getElementById("menu-display-name");
 const menuProgress = document.getElementById("menu-progress");
 const placeholderMessage = document.getElementById("placeholder-message");
+const quizTypeStack = document.getElementById("quiz-type-stack");
+const mathLevelStack = document.getElementById("math-level-stack");
 const quizGeneration = document.getElementById("quiz-generation");
 const quizCount = document.getElementById("quiz-count");
 const quizScore = document.getElementById("quiz-score");
 const quizProgress = document.getElementById("quiz-progress");
 const quizQuestion = document.getElementById("quiz-question");
+const flagQuizImageWrap = document.getElementById("flag-quiz-image-wrap");
+const flagQuizImage = document.getElementById("flag-quiz-image");
 const quizAlert = document.getElementById("quiz-alert");
+const answerGrid = document.getElementById("answer-grid");
 const answerButtons = Array.from(document.querySelectorAll(".answer-button"));
 const resultScore = document.getElementById("result-score");
 const resultRewardImages = document.getElementById("result-reward-images");
@@ -62,7 +67,7 @@ const errorMessage = document.getElementById("error-message");
 const retryButton = document.getElementById("retry-button");
 
 export const dom = {
-  appShell, screens, startButton, devBuildInfo, loadingMainMessage, loadingUserName, menuDisplayName, menuProgress, placeholderMessage, quizGeneration, quizCount, quizScore, quizProgress, quizQuestion, quizAlert, answerButtons, resultScore, resultRewardImages, resultMessage, resultSaveStatus, retryRewardButton, resultClearButton, resultCompleteButton, resultRetryButton, resultZukanButton, resultMenuButton, generationStartTitle, generationStartMessage, generationStartButton, generationClearTitle, generationClearMessage, generationClearContinueButton, generationClearZukanButton, allCompleteMessage, zukanTabs, zukanGenerationName, zukanGenerationCount, zukanMessage, zukanGrid, pokemonModalBackdrop, pokemonModalPanel, modalPokemonName, modalPokemonImage, modalPokemonTypes, modalPokemonHeight, modalPokemonWeight, modalPokemonFlavor, errorMessage, retryButton
+  appShell, screens, startButton, devBuildInfo, loadingMainMessage, loadingUserName, menuDisplayName, menuProgress, placeholderMessage, quizTypeStack, mathLevelStack, quizGeneration, quizCount, quizScore, quizProgress, quizQuestion, flagQuizImageWrap, flagQuizImage, quizAlert, answerGrid, answerButtons, resultScore, resultRewardImages, resultMessage, resultSaveStatus, retryRewardButton, resultClearButton, resultCompleteButton, resultRetryButton, resultZukanButton, resultMenuButton, generationStartTitle, generationStartMessage, generationStartButton, generationClearTitle, generationClearMessage, generationClearContinueButton, generationClearZukanButton, allCompleteMessage, zukanTabs, zukanGenerationName, zukanGenerationCount, zukanMessage, zukanGrid, pokemonModalBackdrop, pokemonModalPanel, modalPokemonName, modalPokemonImage, modalPokemonTypes, modalPokemonHeight, modalPokemonWeight, modalPokemonFlavor, errorMessage, retryButton
 };
 
 window.AppDom = dom;
