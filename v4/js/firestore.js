@@ -120,6 +120,61 @@ export async function getGenerationMaster(generation) {
   return state.generationMasterPromises[generation];
 }
 
+export function validateCountryMaster(country) {
+  if (!country || typeof country !== "object") return false;
+  if (typeof country.country_id !== "string" || !/^[a-z]{2}$/.test(country.country_id)) return false;
+  if (typeof country.country_code !== "string" || country.country_code !== country.country_id.toUpperCase()) return false;
+  if (typeof country.country_name_ja !== "string" || country.country_name_ja.trim() === "") return false;
+  if (typeof country.country_name_en !== "string" || country.country_name_en.trim() === "") return false;
+  if (typeof country.flag_url !== "string" || !country.flag_url.startsWith("https://")) return false;
+  return country.enabled === true;
+}
+
+export async function getEnabledCountryMasters() {
+  if (state.countryMasterList) return state.countryMasterList;
+  if (state.countryMasterPromise) return state.countryMasterPromise;
+  if (!state.firebaseReady || !state.db) {
+    throw new Error("Firebaseのじゅんびが まだできていません。");
+  }
+
+  state.countryMasterPromise = state.db.collection("country_masters")
+    .where("enabled", "==", true)
+    .get()
+    .then(function(snapshot) {
+      const countries = [];
+      snapshot.forEach(function(docSnap) {
+        const data = docSnap.data();
+        const country = {
+          country_id: data.country_id || docSnap.id,
+          country_code: data.country_code || "",
+          country_name_ja: data.country_name_ja || "",
+          country_name_en: data.country_name_en || "",
+          flag_url: data.flag_url || "",
+          region: data.region ?? null,
+          capital_ja: data.capital_ja ?? null,
+          difficulty: data.difficulty ?? null,
+          similar_group_id: data.similar_group_id ?? null,
+          enabled: data.enabled === true,
+          source: data.source || "",
+          updated_at: data.updated_at || ""
+        };
+        if (validateCountryMaster(country)) countries.push(country);
+      });
+      countries.sort(function(a, b) {
+        return a.country_id.localeCompare(b.country_id);
+      });
+      state.countryMasterList = countries;
+      state.countryMasterPromise = null;
+      return countries;
+    })
+    .catch(function(error) {
+      state.countryMasterPromise = null;
+      throw error;
+    });
+
+  return state.countryMasterPromise;
+}
+
 export async function loadUserData(userId) {
   if (state.isLoadingUser) return;
   if (!state.firebaseReady || !state.db) {
@@ -351,6 +406,8 @@ window.AppFirestore = {
   prefetchCurrentGenerationMaster,
   getCurrentGenerationMaster,
   getGenerationMaster,
+  validateCountryMaster,
+  getEnabledCountryMasters,
   loadUserData,
   retryLoadUserData,
   savePendingRewardOnce,

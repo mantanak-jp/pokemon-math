@@ -105,9 +105,10 @@ Step 4: 国旗クイズ要求仕様の確定 ← 完了
 Step 5: country_masters設計のV4向け確定 ← 完了
 Step 6: country_masters.generated.json 作成 ← 完了
 Step 7: Firestore投入ツール作成 ← 完了
-Step 8-A: Firestore投入機能の追加 ← 今回
-Step 8-B: Firestore country_masters 投入・確認
-Step 9: V4国旗クイズ実装
+Step 8-A: Firestore投入機能の追加 ← 完了
+Step 8-B: Firestore country_masters 投入・確認 ← 完了
+Step 9-A: V4国旗クイズの最小実装 ← 今回
+Step 9-B: 報酬接続・結果画面調整・実機確認調整
 Step 10: V4実機確認・安定化
 Step 11: V4 Phase 4完了報告
 Step 12: Main昇格判断
@@ -124,7 +125,8 @@ PR3: 国旗クイズ要求仕様・詳細設計 ← Step 4 で実施
 PR4: country_masters 生成JSON ← Step 6 で実施
 PR5: Firestore投入ツール ← Step 7 で実施
 PR5.5: Firestore投入機能追加 ← Step 8-A で実施
-PR6: 国旗クイズ実装
+PR6: 国旗クイズ最小実装 ← Step 9-A で実施
+PR6.5: 報酬接続・調整 ← Step 9-B で実施
 PR7: 安定化・完了報告
 ```
 
@@ -164,6 +166,8 @@ V4 関連 PR では、少なくとも以下を確認します。
 Firestore を扱う PR では、読み取り先・書き込み先・既存データへの影響を PR 本文に明記します。
 
 Step 7 の `tools/import_country_masters.html` は投入前確認専用です。Step 8-A で安全条件付きの投入機能を追加し、Firestore実データへの投入は Step 8-B の明示承認後に行います。
+
+Step 9-A では、V4 runtime に国旗クイズの最小導線、Firestore `country_masters` 読み取り、5問4択の出題・判定・簡易結果表示を追加します。報酬接続と最終調整は Step 9-B で行います。
 
 ## 10. 未確定事項
 

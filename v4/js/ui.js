@@ -85,12 +85,19 @@ export function getGenerationText(clearedGenerations) {
 export function renderFastMenu(userData) {
   const ownedCount = new Set(userData.current_gen_owned).size;
   dom.menuDisplayName.textContent = userData.displayName;
+  dom.quizTypeStack.classList.remove("hidden");
+  dom.mathLevelStack.classList.add("hidden");
   if (userData.cleared_generations === 9) {
     dom.menuProgress.textContent = "全世代コンプリート！\nさんすうに ちょうせんできるよ！";
   } else {
     dom.menuProgress.textContent = getGenerationText(userData.cleared_generations) + "  " + ownedCount + "ひき ゲットずみ！";
   }
   showScreen("menu");
+}
+
+export function showMathLevelSelect() {
+  dom.quizTypeStack.classList.add("hidden");
+  dom.mathLevelStack.classList.remove("hidden");
 }
 
 export function showGenerationStart(generation, level) {
@@ -175,6 +182,7 @@ window.AppUI = {
   markGenerationStartShown,
   getGenerationText,
   renderFastMenu,
+  showMathLevelSelect,
   showGenerationStart,
   setResultActionDisabled,
   resetResultProgressActions,

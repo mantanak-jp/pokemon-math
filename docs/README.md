@@ -21,6 +21,7 @@
 | V4 country_masters 設計 | `docs/v4_country_master_design.md` |
 | V4 country_masters 生成JSON | `data/country_masters.generated.json` |
 | V4 country_masters 投入ツール | `tools/import_country_masters.html` |
+| V4国旗クイズ最小実装 | `v4/` |
 | 開発運用 | `docs/local_dev_environment.md` |
 | Codex連携運用 | `docs/development_workflow.md`, `docs/codex_app_guardrails.md` |
 | V2 ユーザーデータ | Firestore `users_v2/{userId}` |
