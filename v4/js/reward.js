@@ -27,16 +27,16 @@ export function getRewardCount(score) {
 }
 
 export function getFlagRewardCount(score) {
-  if (score >= 4) return 2;
-  if (score >= 2) return 1;
+  if (score >= 5) return 2;
+  if (score >= 3) return 1;
   return 0;
 }
 
 export function getFlagRewardPlaceholderMessage(score) {
-  if (score >= 2) {
+  if (score >= 3) {
     return "ポケモンを ゲットしているよ...";
   }
-  return "おしい！ 2もん せいかいで ポケモンを ゲット！";
+  return "おしい！ 3もん せいかいで ポケモンを ゲット！";
 }
 
 export function getLevelPoolLimit(level, pokemonList) {

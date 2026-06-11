@@ -2,8 +2,8 @@ export const APP_VERSION = {
   major: 4,
   minor: 0,
   patch: 0,
-  build: 2,
-  generatedAt: "202606120002"
+  build: 3,
+  generatedAt: "202606120003"
 };
 
 export function formatAppVersion(version = APP_VERSION) {
@@ -12,7 +12,7 @@ export function formatAppVersion(version = APP_VERSION) {
 
 export const DEV_BUILD = {
   version: formatAppVersion(APP_VERSION),
-  phase: "V4 flag quiz rewards and UI",
+  phase: "V4 flag quiz reward threshold adjustment",
   updatedAt: APP_VERSION.generatedAt
 };
 
