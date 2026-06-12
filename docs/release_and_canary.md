@@ -129,3 +129,26 @@ Git履歴による rollback を優先し、archive退避版は手動復旧時の
 - V2 / V3 / Mainから `users` コレクションへ通常プレイ中に書き込まないでください。
 - `masters/gen_{1..9}` へ通常プレイ中に書き込まないでください。
 - `body.modal-open` を安易に戻さないでください。
+
+## 10. V4 Main昇格PR方針
+
+Step 12-B の V4 Main昇格PRでは、root `index.html` を V4 相当のアプリシェルに更新します。
+
+採用する方式は案Dです。
+
+```text
+- root index.html は V4 シェル相当に更新する。
+- root index.html は ./v4/css/app.css と ./v4/js/main.js を参照する。
+- v4/index.html は変更しない。
+- v3/ は V3.1 過去版資産として残す。
+- v4/ は V4 実行資産および /v4/ 確認URLとして残す。
+- Main昇格前の root index.html は archive/index_v3_1_main_before_v4.html に退避する。
+```
+
+rollback は以下を基本とします。
+
+```text
+- 第一候補: V4 Main昇格PRを revert する。
+- 手動復旧候補: archive/index_v3_1_main_before_v4.html を root index.html に戻すPRを作成する。
+- v3/ と v4/ は削除しないため、V3.1資産とV4資産はいずれも保持される。
+```

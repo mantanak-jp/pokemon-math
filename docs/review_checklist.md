@@ -573,3 +573,24 @@ V4 Phase 4完了報告PRでは、以下を確認します。
 - Main昇格を実施していないこと
 - Step 12 Main昇格判断に向けた観点が整理されていること
 ```
+
+## V4 Main昇格PRチェック
+
+V4 Main昇格PRでは、以下を確認します。
+
+```text
+- root index.html が V4 相当シェルになっていること
+- root index.html が ./v4/css/app.css を参照していること
+- root index.html が ./v4/js/main.js を参照していること
+- archive/index_v3_1_main_before_v4.html が作成されていること
+- archive退避ファイルが昇格前の root index.html を復元できる内容であること
+- v3/ を変更していないこと
+- v4/ を変更していないこと
+- data/country_masters.generated.json を変更していないこと
+- tools/ を変更していないこと
+- Firebase / Firestore 設定を変更していないこと
+- Firestore 実データを変更していないこと
+- 期待バージョン表示が V4開発版 v4.0.0.3.202606120003 であること
+- Main /v4/ /v3/ の確認URLをPR本文に明記していること
+- rollback 方針をPR本文に明記していること
+```

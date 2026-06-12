@@ -196,3 +196,32 @@ Step 11 では、V4 Phase 4 国旗クイズ開発の完了内容を `docs/v4_pha
 完了報告では、実装済み機能、Firestore `country_masters` 投入結果、iPhone実機確認、変更していない保護領域、Step 12 Main昇格判断に向けた観点を扱います。
 
 Step 12 の Main昇格判断は、runtime変更を含む可能性があるため、今回の完了報告PRとは分けて扱います。
+
+## Step 12-B V4 Main昇格PR
+
+Step 12-B では、root `index.html` を V4 相当のMainシェルに更新するPRを作成します。
+
+採用する昇格方式は案Dです。
+
+```text
+- root index.html を V4 シェル相当に更新する。
+- root index.html は ./v4/css/app.css と ./v4/js/main.js を参照する。
+- v4/index.html は変更しない。
+- v3/ は過去版資産として残す。
+- v4/ はV4実行資産および /v4/ 確認URLとして残す。
+- Main昇格前の root index.html は archive/index_v3_1_main_before_v4.html に退避する。
+```
+
+merge後の確認URLは以下です。
+
+```text
+Main: https://mantanak-jp.github.io/pokemon-math/
+V4: https://mantanak-jp.github.io/pokemon-math/v4/
+V3: https://mantanak-jp.github.io/pokemon-math/v3/
+```
+
+Main昇格後の期待バージョン表示は以下です。
+
+```text
+V4開発版 v4.0.0.3.202606120003
+```

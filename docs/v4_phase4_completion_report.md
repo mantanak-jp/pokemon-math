@@ -208,3 +208,17 @@ Step 12 では、以下を判断します。
 - users_v2 / country_masters の本番利用に問題がないか
 - Main昇格PRは runtime変更を含むため、今回の完了報告PRとは分ける
 ```
+
+## 12. Step 12-B Main昇格PR方針
+
+Step 12-A の読み取り確認により、V4 Main昇格方式は案Dを採用する方針とします。
+
+Step 12-B では、root `index.html` を V4 相当のMainシェルに更新するPRを作成します。実際のMain昇格は、このPRのmerge後に成立します。
+
+```text
+- root index.html は ./v4/css/app.css と ./v4/js/main.js を参照する。
+- v4/index.html は変更しない。
+- v3/ は過去版資産として残す。
+- v4/ はV4実行資産として残す。
+- Main昇格前の root index.html は archive/index_v3_1_main_before_v4.html に退避する。
+```
