@@ -222,3 +222,19 @@ V4 国旗クイズ関連の参照順は以下です。
 7. docs/review_checklist.md
 8. docs/development_workflow.md
 ```
+
+## Step 12-B V4 Main昇格
+
+V4 Main昇格PRでは、root `index.html` を V4 相当シェルに更新し、V4 assets を `./v4/...` で参照します。
+
+関連ファイルは以下です。
+
+```text
+- index.html
+- archive/index_v3_1_main_before_v4.html
+- docs/release_and_canary.md
+- docs/current_inventory.md
+- docs/v4_development_plan.md
+- docs/v4_phase4_completion_report.md
+- docs/review_checklist.md
+```
