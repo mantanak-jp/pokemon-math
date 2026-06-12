@@ -223,5 +223,5 @@ V3: https://mantanak-jp.github.io/pokemon-math/v3/
 Main昇格後の期待バージョン表示は以下です。
 
 ```text
-V4開発版 v4.0.0.3.202606120003
+V4 v4.0.0.3.202606120003
 ```

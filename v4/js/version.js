@@ -17,7 +17,7 @@ export const DEV_BUILD = {
 };
 
 export function formatDevBuildInfo() {
-  return `V4開発版 ${formatAppVersion(APP_VERSION)}`;
+  return `V4 ${formatAppVersion(APP_VERSION)}`;
 }
 
 window.AppVersion = {
