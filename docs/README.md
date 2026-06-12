@@ -205,3 +205,20 @@
 - `ryoma` / `sara` は実データのため、検証で不用意に変更しません。
 - migration.html は通常ユーザー導線に出しません。
 ```
+
+## Step 11 V4 Phase 4完了報告
+
+V4 Phase 4 国旗クイズ開発の完了内容、実機確認、Firestore `country_masters` 投入結果、Main昇格前の確認観点は `docs/v4_phase4_completion_report.md` を参照してください。
+
+V4 国旗クイズ関連の参照順は以下です。
+
+```text
+1. docs/v4_development_plan.md
+2. docs/v4_flag_quiz_requirements.md
+3. docs/v4_country_master_design.md
+4. data/country_masters.generated.json
+5. tools/import_country_masters.html
+6. docs/v4_phase4_completion_report.md
+7. docs/review_checklist.md
+8. docs/development_workflow.md
+```

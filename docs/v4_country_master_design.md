@@ -388,3 +388,9 @@ Step 8-A の確認観点は以下です。
 - data/country_masters.generated.json を変更していないこと
 - v4/ を変更していないこと
 ```
+
+## Step 11 完了報告への参照
+
+Firestore `country_masters` の投入結果、確認済み件数、代表document確認、主要フィールド確認は `docs/v4_phase4_completion_report.md` に整理します。
+
+Step 12 の Main昇格判断では、`country_masters` が本番利用に問題ないかをこの完了報告とあわせて確認します。

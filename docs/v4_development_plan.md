@@ -188,3 +188,11 @@ Step 2 時点の未確定事項は以下です。
 ```
 
 これらは、V4 の詳細設計 PR 以降で順次確定します。
+
+## Step 11 V4 Phase 4完了報告
+
+Step 11 では、V4 Phase 4 国旗クイズ開発の完了内容を `docs/v4_phase4_completion_report.md` に整理します。
+
+完了報告では、実装済み機能、Firestore `country_masters` 投入結果、iPhone実機確認、変更していない保護領域、Step 12 Main昇格判断に向けた観点を扱います。
+
+Step 12 の Main昇格判断は、runtime変更を含む可能性があるため、今回の完了報告PRとは分けて扱います。
